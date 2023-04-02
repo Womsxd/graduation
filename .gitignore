@@ -127,3 +127,11 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# my
+ddoc/
+config.yaml
+data.db
+
+#idea
+.idea/
