@@ -5,7 +5,14 @@ from flask import Flask, request, session
 app = Flask(__name__)
 with open("config.yaml", 'r', encoding='utf-8') as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
-app.secret_key = config['cookie']['secret']
+
+
+class FlaskConfig(object):
+    DEBUG = False
+    SECRET_KEY = config['cookie']['secret']
+
+
+app.config.from_object(FlaskConfig)
 
 
 def auth(func):
@@ -36,5 +43,7 @@ def index():
 
 
 if __name__ == '__main__':
-    app = Flask(__name__)
-    app.run(host=config['host'], port=config['port'], debug=False)
+    from gevent import pywsgi
+
+    server = pywsgi.WSGIServer((config['base']['host'], int(config['base']['port'])), app)
+    server.serve_forever()
