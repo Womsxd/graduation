@@ -30,7 +30,7 @@ create table examsessions
     name TEXT
 );
 
-create table "group"
+create table groups
 (
     id   INTEGER not null
         primary key autoincrement,
@@ -63,7 +63,7 @@ create table user
         primary key autoincrement,
     account  TEXT    not null,
     password TEXT    not null,
-    "group"  INTEGER
+    groupid  INTEGER default 3 not null
 );
 
 create unique index user_account_uindex
