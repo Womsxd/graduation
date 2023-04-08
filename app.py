@@ -10,6 +10,11 @@ with open("config.yaml", 'r', encoding='utf-8') as f:
 class FlaskConfig(object):
     DEBUG = False
     SECRET_KEY = config['cookie']['secret']
+    db = config["database"]
+    if db["type"] == "sqlite":
+        SQLALCHEMY_DATABASE_URI = f'sqlite:///{db["sqlite_file"]}'
+    else:
+        SQLALCHEMY_DATABASE_URI = f'{db["type"]}://{db["username"]}:{db["password"]}@{db["host"]}/{db["dbname"]}'
 
 
 app.config.from_object(FlaskConfig)

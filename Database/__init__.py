@@ -1,13 +1,13 @@
-import sqlite3
+from app import app
 from flask import g
-
-DATABASE = './database.db'
+from .models import *
+from flask_sqlalchemy import SQLAlchemy
 
 
 def get_db():
     db = getattr(g, '_database', None)
     if db is None:
-        db = g._database = sqlite3.connect(DATABASE)
+        db = g._database = SQLAlchemy(app)
     return db
 
 
