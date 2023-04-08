@@ -1,8 +1,10 @@
+import os
 import yaml
-import functools
-from flask import Flask, request, session
+from flask import Flask
+from database import db
+from auth import auth as auth_blueprint
+from auth import login_managet
 
-app = Flask(__name__)
 with open("config.yaml", 'r', encoding='utf-8') as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 
@@ -12,43 +14,24 @@ class FlaskConfig(object):
     SECRET_KEY = config['cookie']['secret']
     db = config["database"]
     if db["type"] == "sqlite":
-        SQLALCHEMY_DATABASE_URI = f'sqlite:///{db["sqlite_file"]}'
+        db_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), f'./{db["sqlite_file"]}')
+        SQLALCHEMY_DATABASE_URI = f'sqlite:///{db_path}'
     else:
         SQLALCHEMY_DATABASE_URI = f'{db["type"]}://{db["username"]}:{db["password"]}@{db["host"]}/{db["dbname"]}'
 
 
+app = Flask(__name__)
 app.config.from_object(FlaskConfig)
+login_managet.init_app(app)
+app.register_blueprint(auth_blueprint)
+db.init_app(app)
 
 
-def auth(func):
-    @functools.wraps(func)
-    def inner(*args, **kwargs):
-        if session.get('account'):
-            ret = func(*args, **kwargs)
-            return ret
-        return "No Login"
 
-    return inner
-
-
-@app.route('/auth/login', methods=['post'])
-def login():
-    account = request.form.get('account')
-    password = request.form.get('password')
-    if account != "" and password == account[-4:]:
-        session['account'] = account
-        return "pass"
-    return 'Error'
-
-
-@app.route('/')
-@auth
-def index():
-    return "Index"
 
 
 if __name__ == '__main__':
     from gevent import pywsgi
-
     server = pywsgi.WSGIServer((config['base']['host'], int(config['base']['port'])), app)
+    print(f"App Running on: http:{config['base']['host']}:{int(config['base']['port'])}")
     server.serve_forever()
