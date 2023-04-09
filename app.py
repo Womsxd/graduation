@@ -3,7 +3,7 @@ import yaml
 from flask import Flask
 from database import db
 from auth import auth as auth_blueprint
-from auth import login_managet
+from auth import login_manager
 
 with open("config.yaml", 'r', encoding='utf-8') as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
@@ -23,7 +23,7 @@ class FlaskConfig(object):
 
 app = Flask(__name__)
 app.config.from_object(FlaskConfig)
-login_managet.init_app(app)
+login_manager.init_app(app)
 app.register_blueprint(auth_blueprint)
 db.init_app(app)
 

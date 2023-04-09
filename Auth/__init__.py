@@ -7,9 +7,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 
 auth = Blueprint('auth', __name__)
-login_managet = LoginManager()
-login_managet.session_protection = "strong"
-login_managet.login_view = "/auth/unauthorized"
+login_manager = LoginManager()
+login_manager.session_protection = "strong"
+login_manager.login_view = "/auth/unauthorized"
 
 
 class User(UserMixin, models.User):
@@ -26,8 +26,8 @@ class User(UserMixin, models.User):
         return check_password_hash(self.password, password)
 
 
-@login_managet.user_loader
-def load_loader(csrf):
+@login_manager.user_loader
+def user_loader(csrf):
     if User.query.filter_by(csrf=csrf).first():
         user = User()
         user.csrf = csrf
@@ -55,13 +55,13 @@ def login():
 @login_required
 def logout():
     User.query.filter_by(csrf=current_user.get_id()).update({'csrf': None})
-    # 退出登入后让csrf失效
+    # 退出登入后让csrf失效，先获取+修改，等logout_user执行之后再提交修改
     logout_user()
     db.session.commit()
     return json.dumps({'code': 0, "message": ""})
 
 
 @auth.route('/auth/unauthorized')
-@login_managet.unauthorized_handler
+@login_manager.unauthorized_handler
 def unauthorized():
     return json.dumps({'code': 2, "message": "NoLogin"})
