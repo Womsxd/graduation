@@ -47,6 +47,7 @@ def login():
         db.session.commit()
         # 提交修改到数据库
         login_user(user)
+        session["_uid"] = user.id
         return json.dumps({'code': 0, "message": ""})
     return json.dumps({'code': 1, "message": "Account/Password Error"})
 
