@@ -1,19 +1,23 @@
 import json
+import time
 import utils
-from flask import request, Blueprint
-from database import models
-from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required
+from database import models, db
+from flask import request, Blueprint, session
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 
 auth = Blueprint('auth', __name__)
 login_managet = LoginManager()
 login_managet.session_protection = "strong"
-login_managet.login_view = "/auth/nologin"
+login_managet.login_view = "/auth/unauthorized"
 
 
 class User(UserMixin, models.User):
     def __init__(self):
         super(User, self).__init__()
+
+    def get_id(self):
+        return str(self.csrf)
 
     def set_password(self, password):
         self.password = generate_password_hash(password, "pbkdf2:sha512")
@@ -23,10 +27,10 @@ class User(UserMixin, models.User):
 
 
 @login_managet.user_loader
-def load_loader(id):
-    if User.query.filter_by(id=id).first():
+def load_loader(csrf):
+    if User.query.filter_by(csrf=csrf).first():
         user = User()
-        user.id = id
+        user.csrf = csrf
         return user
     return None
 
@@ -35,10 +39,14 @@ def load_loader(id):
 def login():
     account = request.form.get('account')
     password = request.form.get('password')
-    print(password)
     user = User.query.filter_by(account=account).first()
     if user is not None and user.vailidate_password(password):
-        login_user(user, fresh=True)
+        session.permanent = True
+        user.csrf = utils.sha256(f'{user.id}-{time.time()}-{user.password}')
+        # 登入后刷新csrf 让旧的失效 采用用户数字id+时间戳+密码进行哈希生成 防止重复
+        db.session.commit()
+        # 提交修改到数据库
+        login_user(user)
         return json.dumps({'code': 0, "message": ""})
     return json.dumps({'code': 1, "message": "Account/Password Error"})
 
@@ -46,10 +54,14 @@ def login():
 @auth.route('/auth/logout', methods=['get', 'post'])
 @login_required
 def logout():
+    User.query.filter_by(csrf=current_user.get_id()).update({'csrf': None})
+    # 退出登入后让csrf失效
     logout_user()
+    db.session.commit()
     return json.dumps({'code': 0, "message": ""})
 
 
-@auth.route('/auth/nologin')
-def nologin():
+@auth.route('/auth/unauthorized')
+@login_managet.unauthorized_handler
+def unauthorized():
     return json.dumps({'code': 2, "message": "NoLogin"})

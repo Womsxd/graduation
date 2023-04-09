@@ -1,5 +1,6 @@
 # coding: utf-8
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text
 
 db = SQLAlchemy()
 
@@ -49,7 +50,7 @@ class Student(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sid = db.Column(db.Text, nullable=False, unique=True)
     name = db.Column(db.Text, nullable=False)
-    sex = db.Column(db.Integer, nullable=False, server_default=db.FetchedValue())
+    sex = db.Column(db.Integer, nullable=False, server_default=text("1"))
     _class = db.Column('class', db.Integer, nullable=False)
 
 
@@ -66,4 +67,5 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     account = db.Column(db.Text, nullable=False, unique=True)
     password = db.Column(db.Text, nullable=False)
-    groupid = db.Column(db.Integer, nullable=False, server_default=db.FetchedValue())
+    groupid = db.Column(db.Integer, nullable=False, server_default=text("3"))
+    csrf = db.Column(db.Text, unique=True)

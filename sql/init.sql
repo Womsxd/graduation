@@ -63,10 +63,13 @@ create table user
         primary key autoincrement,
     account  TEXT    not null,
     password TEXT    not null,
-    groupid  INTEGER default 3 not null
+    groupid  INTEGER default 3 not null,
+    csrf     TEXT
 );
 
 create unique index user_account_uindex
     on user (account);
 
+create unique index user_csrf_uindex
+    on user (csrf);
 

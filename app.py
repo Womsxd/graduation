@@ -10,8 +10,9 @@ with open("config.yaml", 'r', encoding='utf-8') as f:
 
 
 class FlaskConfig(object):
-    DEBUG = False
+    DEBUG = True
     SECRET_KEY = config['cookie']['secret']
+    REMEMBER_COOKIE_DURATION = 2592000000
     db = config["database"]
     if db["type"] == "sqlite":
         db_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), f'./{db["sqlite_file"]}')
