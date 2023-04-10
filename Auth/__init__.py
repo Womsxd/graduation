@@ -1,9 +1,8 @@
-import json
 import time
-import utils
+import utils as gutils
+import auth.utils as autils
 from database import models, db
-from flask import request, Blueprint, session
-from werkzeug.security import generate_password_hash, check_password_hash
+from flask import request, Blueprint, session, jsonify
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 
 auth = Blueprint('auth', __name__)
@@ -20,10 +19,10 @@ class User(UserMixin, models.User):
         return str(self.csrf)
 
     def set_password(self, password):
-        self.password = generate_password_hash(password, "pbkdf2:sha512")
+        self.password = autils.get_password(password)
 
     def vailidate_password(self, password):
-        return check_password_hash(self.password, password)
+        return autils.vailidate_password(self.password, password)
 
 
 @login_manager.user_loader
@@ -42,14 +41,14 @@ def login():
     user = User.query.filter_by(account=account).first()
     if user is not None and user.vailidate_password(password):
         session.permanent = True
-        user.csrf = utils.sha256(f'{user.id}-{time.time()}-{user.password}')
+        user.csrf = gutils.sha256(f'{user.id}-{time.time()}-{user.password}')
         # 登入后刷新csrf 让旧的失效 采用用户数字id+时间戳+密码进行哈希生成 防止重复
         db.session.commit()
         # 提交修改到数据库
         login_user(user)
         session["_uid"] = user.id
-        return json.dumps({'code': 0, "message": ""})
-    return json.dumps({'code': 1, "message": "Account/Password Error"})
+        return jsonify({'code': 0, "message": ""})
+    return jsonify({'code': 1, "message": "Account/Password Error"})
 
 
 @auth.route('/auth/logout', methods=['get', 'post'])
@@ -59,10 +58,10 @@ def logout():
     # 退出登入后让csrf失效，先获取+修改，等logout_user执行之后再提交修改
     logout_user()
     db.session.commit()
-    return json.dumps({'code': 0, "message": ""})
+    return jsonify({'code': 0, "message": ""})
 
 
 @auth.route('/auth/unauthorized')
 @login_manager.unauthorized_handler
 def unauthorized():
-    return json.dumps({'code': 2, "message": "NoLogin"})
+    return jsonify({'code': 2, "message": "NoLogin"})

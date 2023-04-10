@@ -34,7 +34,8 @@ create table groups
 (
     id   INTEGER not null
         primary key autoincrement,
-    name TEXT    not null
+    name TEXT    not null,
+    inherit TEXT
 );
 
 create table student
