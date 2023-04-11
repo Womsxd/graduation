@@ -22,7 +22,7 @@ def check_permissions(group_id):
 def gcheck(group: models.Group, need_id: int):
     if group is None:
         return False
-    print(group.id, group.inherit, need_id)
+    # print(group.id, group.inherit, need_id)
     if group.id == need_id:
         return True
     if group.inherit is None:
