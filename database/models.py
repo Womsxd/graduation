@@ -52,7 +52,7 @@ class Student(db.Model):
     sid = db.Column(db.Text, nullable=False, unique=True)
     name = db.Column(db.Text(20), nullable=False)
     sex = db.Column(db.Integer, nullable=False, server_default=text("1"))
-    _class = db.Column('class', db.Integer, nullable=False)
+    class_ = db.Column('class', db.Integer, nullable=False)
 
 
 class Subject(db.Model):
