@@ -6,7 +6,7 @@ from auth import login_manager
 from auth import auth as auth_blueprint
 from user import userf as user_blueprint
 from school import school as school_blueprint
-
+from student import student as student_blueprint
 
 from group import check_permissions
 from flask_login import login_required
@@ -31,11 +31,12 @@ class FlaskConfig(object):
 
 app = Flask(__name__)
 app.config.from_object(FlaskConfig)
+db.init_app(app)
 login_manager.init_app(app)
 app.register_blueprint(auth_blueprint)
 app.register_blueprint(user_blueprint)
 app.register_blueprint(school_blueprint)
-db.init_app(app)
+app.register_blueprint(student_blueprint)
 
 
 @app.route("/ping")
