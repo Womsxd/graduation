@@ -1,3 +1,4 @@
+import messages
 import auth.utils
 from database import models, db
 from group import check_permissions
@@ -14,9 +15,9 @@ def changepwd():
     new_pwd = request.form.get("new_pwd")
     user = models.User.query.filter_by(csrf=current_user.get_id()).first()
     if old_pwd is None or new_pwd is None or user is None:
-        return jsonify({'code': 3, "message": "Old/New Password Not equal to None"})
+        return jsonify(messages.DATA_NONE)
     if not auth.utils.vailidate_password(user.password, old_pwd):
-        return jsonify({'code': 1, "message": "Password Error"})
+        return jsonify(messages.PASSWORD_ERROR)
     user.password = auth.utils.get_password(new_pwd)
     user.csrf = None
     db.session.commit()
@@ -27,19 +28,17 @@ def changepwd():
 @login_required
 @check_permissions(1)
 def add():
-    account = request.form.get('account')
+    user = models.User()
+    user.account = request.form.get('account')
     password = request.form.get('password')
     groupid = request.form.get('groupid')
-    if account is None and password is None:
-        return jsonify({'code': 3, "message": "Account Not equal to None"})
-    user = models.User()
-    user.account = account
+    if user.account is None and password is None:
+        return jsonify(messages.DATA_NONE)
     user.password = auth.autils.get_password(password)
     if groupid is not None:
         user.groupid = groupid
     db.session.add(user)
-    print(db.session.commit())
-    return jsonify({'code': 0, "message": ""})
+    return jsonify(messages.OK)
 
 
 @userf.route('/user/edit', methods=['post'])
@@ -51,14 +50,14 @@ def edit():
     groupid = request.form.get('groupid')
     user = models.User.query.filter_by(account=account).first()
     if account is None or user is None:
-        return jsonify({'code': 3, "message": "Account Not equal to None"})
+        return jsonify(messages.DATA_NONE)
     if password is not None:
         user.password = auth.utils.get_password(password)
         user.csrf = None
     if groupid is not None:
         user.groupid = groupid
     db.session.commit()
-    return jsonify({'code': 0, "message": ""})
+    return jsonify(messages.OK)
 
 
 @userf.route('/user/delete', methods=['post'])
@@ -67,10 +66,10 @@ def edit():
 def delete():
     account = request.form.get('account')
     if account is None:
-        return jsonify({'code': 3, "message": "Account Not equal to None"})
+        return jsonify(messages.DATA_NONE)
     models.User.query.filter_by(account=account).delete()
     db.session.commit()
-    return jsonify({'code': 0, "message": ""})
+    return jsonify(messages.OK)
 
 
 @userf.route('/user/list', methods=['get', 'post'])
@@ -84,5 +83,7 @@ def ulist():
     data = []
     for i in users:
         data.append({"id": i.id, "account": i.account, "group": i.groupid})
-    return jsonify(
-        {'code': 0, "message": "", "data": {"users": data, "total": total, "current": page, "maximum": maximum}})
+    rej = {}
+    rej.update(messages.OK_DATA)
+    rej["data"] = {"users": data, "total": total, "current": page, "maximum": maximum}
+    return jsonify(rej)

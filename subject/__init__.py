@@ -1,7 +1,9 @@
+import messages
 from database import models, db
 from group import check_permissions
-from flask import request, jsonify, Blueprint
 from flask_login import login_required
+from flask import request, jsonify, Blueprint
+
 
 subject = Blueprint('subject', __name__)
 
@@ -14,10 +16,10 @@ def add():
     subj.id_ = request.form.get('id')
     subj.name = request.form.get('name')
     if subj.sid is None and subj.name is None:
-        return jsonify({'code': 3, "message": "data Not equal to None"})
+        return jsonify(messages.DATA_NONE)
     db.session.add(subj)
     print(db.session.commit())
-    return jsonify({'code': 0, "message": ""})
+    return jsonify(messages.OK)
 
 
 @subject.route('/subject/edit', methods=['post'])
@@ -28,11 +30,11 @@ def edit():
     name = request.form.get('name')
     subj = models.Subject.query.filter_by(id=id_).first()
     if id_ is None or subj is None:
-        return jsonify({'code': 3, "message": "id Not equal to None"})
+        return jsonify(messages.DATA_NONE)
     if name is not None:
         subj.name = name
     db.session.commit()
-    return jsonify({'code': 0, "message": ""})
+    return jsonify(messages.OK)
 
 
 @subject.route('/subject/delete', methods=['post'])
@@ -41,10 +43,10 @@ def edit():
 def delete():
     id_ = request.form.get('id')
     if id_ is None:
-        return jsonify({'code': 3, "message": "sid Not equal to None"})
+        return jsonify(messages.DATA_NONE)
     models.Subject.query.filter_by(id=id_).delete()
     db.session.commit()
-    return jsonify({'code': 0, "message": ""})
+    return jsonify(messages.OK)
 
 
 @subject.route('/subject/list', methods=['get', 'post'])

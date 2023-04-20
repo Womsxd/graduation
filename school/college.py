@@ -1,3 +1,4 @@
+import messages
 from school import school
 from database import models, db
 from group import check_permissions
@@ -12,13 +13,13 @@ def add():
     cid = request.form.get('id')
     name = request.form.get('name')
     if cid is None and name is None:
-        return jsonify({'code': 3, "message": "id/name Not equal to None"})
+        return jsonify(messages.DATA_NONE)
     college = models.College()
     college.id = cid
     college.name = name
     db.session.add(college)
     db.session.commit()
-    return jsonify({'code': 0, "message": ""})
+    return jsonify(messages.OK)
 
 
 @school.route('/school/college/edit', methods=['post'])
@@ -29,11 +30,11 @@ def edit():
     name = request.form.get('name')
     college = models.College.query.filter_by(id=cid).first()
     if cid is None or college is None:
-        return jsonify({'code': 3, "message": "id Not equal to None"})
+        return jsonify(messages.DATA_NONE)
     if name is not None:
         college.name = name
     db.session.commit()
-    return jsonify({'code': 0, "message": ""})
+    return jsonify(messages.OK)
 
 
 @school.route('/school/college/delete', methods=['post'])
@@ -42,10 +43,10 @@ def edit():
 def delete():
     cid = request.form.get('id')
     if cid is None:
-        return jsonify({'code': 3, "message": "id Not equal to None"})
+        return jsonify(messages.DATA_NONE)
     models.College.query.filter_by(id=cid).delete()
     db.session.commit()
-    return jsonify({'code': 0, "message": ""})
+    return jsonify(messages.OK)
 
 
 @school.route('/school/college/list', methods=['get', 'post'])
@@ -58,6 +59,8 @@ def ulist():
     maximum = int(total / 20) + 1
     data = []
     for i in colleges:
-        data.append({"id": i.id, "name": i.account})
-    return jsonify(
-        {'code': 0, "message": "", "data": {"users": data, "total": total, "current": page, "maximum": maximum}})
+        data.append({"id": i.id, "name": i.name})
+    rej = {}
+    rej.update(messages.OK_DATA)
+    rej["data"] = {"college": data, "total": total, "current": page, "maximum": maximum}
+    return jsonify(rej)

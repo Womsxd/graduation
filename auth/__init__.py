@@ -1,4 +1,5 @@
 import time
+import messages
 import utils as gutils
 import auth.utils as autils
 from database import models, db
@@ -47,8 +48,8 @@ def login():
         # 提交修改到数据库
         login_user(user)
         session["_uid"] = user.id
-        return jsonify({'code': 0, "message": ""})
-    return jsonify({'code': 1, "message": "Account/Password Error"})
+        return jsonify(messages.PASSWORD_ERROR)
+    return jsonify(messages.OK)
 
 
 @auth.route('/auth/logout', methods=['get', 'post'])
@@ -58,10 +59,10 @@ def logout():
     # 退出登入后让csrf失效，先获取+修改，等logout_user执行之后再提交修改
     logout_user()
     db.session.commit()
-    return jsonify({'code': 0, "message": ""})
+    return jsonify(messages.OK)
 
 
 @auth.route('/auth/unauthorized')
 @login_manager.unauthorized_handler
 def unauthorized():
-    return jsonify({'code': 2, "message": "NoLogin"})
+    return jsonify(messages.NO_LOGIN)

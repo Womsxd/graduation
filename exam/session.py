@@ -1,66 +1,62 @@
 import messages
-from school import school
+from exam import exam
 from database import models, db
 from flask import request, jsonify
 from group import check_permissions
 from flask_login import login_required
 
 
-@school.route('/school/class/add', methods=['post'])
+@exam.route('/exam/session/add', methods=['post'])
 @login_required
 @check_permissions(1)
 def add():
-    clas = models.Clas()
-    clas.id = request.form.get('id')
-    clas.name = request.form.get('name')
-    clas.college = request.form.get('college')
-    if clas.id is None or clas.name is None:
+    esession = models.Examsession()
+    esession.id = request.form.get('id')
+    esession.name = request.form.get('name')
+    if esession.id is None or esession.name is None:
         return jsonify(messages.DATA_NONE)
-    db.session.add(clas)
+    db.session.add(esession)
     db.session.commit()
     return jsonify(messages.OK)
 
 
-@school.route('/school/class/edit', methods=['post'])
+@exam.route('/exam/session/edit', methods=['post'])
 @login_required
 @check_permissions(1)
 def edit():
-    cid = request.form.get('id')
+    id = request.form.get('id')
     name = request.form.get('name')
-    college = request.form.get('college')
-    clas = models.Clas.query.filter_by(id=cid).first()
-    if cid is None or clas is None:
+    esession = models.Examsession.query.filter_by(id=id).first()
+    if id is None or esession is None:
         return jsonify(messages.DATA_NONE)
     if name is not None:
-        clas.name = name
-    if college is not None:
-        clas.college = college
+        esession.name = name
     db.session.commit()
     return jsonify(messages.OK)
 
 
-@school.route('/school/class/delete', methods=['post'])
+@exam.route('/exam/session/delete', methods=['post'])
 @login_required
 @check_permissions(1)
 def delete():
-    cid = request.form.get('id')
-    if cid is None:
+    id = request.form.get('id')
+    if id is None:
         return jsonify(messages.DATA_NONE)
-    models.Clas.query.filter_by(id=cid).delete()
+    models.Examsession.query.filter_by(id=id).delete()
     db.session.commit()
     return jsonify(messages.OK)
 
 
-@school.route('/school/class/list', methods=['get', 'post'])
+@exam.route('/exam/session/list', methods=['get', 'post'])
 @login_required
 @check_permissions(1)
 def ulist():
     page = int(request.values.get("page", 1))
-    sclas = models.Clas.query.offset((page - 1) * 20).limit(20).all()
-    total = models.Clas.query.count()
+    sesession = models.Examsession.query.offset((page - 1) * 20).limit(20).all()
+    total = models.Examsession.query.count()
     maximum = int(total / 20) + 1
     data = []
-    for i in sclas:
+    for i in sesession:
         data.append({"id": i.id, "name": i.account, "college": i.college})
     return jsonify(
         {'code': 0, "message": "", "data": {"users": data, "total": total, "current": page, "maximum": maximum}})

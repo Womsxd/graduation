@@ -1,7 +1,8 @@
+import messages
 from database import models, db
 from group import check_permissions
-from flask import request, jsonify, Blueprint
 from flask_login import login_required
+from flask import request, jsonify, Blueprint
 
 student = Blueprint('student', __name__)
 
@@ -16,10 +17,10 @@ def add():
     stu.sex = request.form.get('sex')
     stu.class_ = request.form.get('class')
     if stu.sid is None and stu.name is None and stu.sex is None and stu.class_ is None:
-        return jsonify({'code': 3, "message": "data Not equal to None"})
+        return jsonify(messages.DATA_NONE)
     db.session.add(stu)
     print(db.session.commit())
-    return jsonify({'code': 0, "message": ""})
+    return jsonify(messages.OK)
 
 
 @student.route('/student/edit', methods=['post'])
@@ -32,7 +33,7 @@ def edit():
     class_ = request.form.get('class')
     stu = models.Student.query.filter_by(sid=sid).first()
     if sid is None or stu is None:
-        return jsonify({'code': 3, "message": "sid Not equal to None"})
+        return jsonify(messages.DATA_NONE)
     if name is not None:
         stu.name = name
     if sex is not None:
@@ -40,7 +41,7 @@ def edit():
     if stu.class_ is not None:
         stu.class_ = class_
     db.session.commit()
-    return jsonify({'code': 0, "message": ""})
+    return jsonify(messages.OK)
 
 
 @student.route('/student/delete', methods=['post'])
@@ -49,10 +50,10 @@ def edit():
 def delete():
     sid = request.form.get('sid')
     if sid is None:
-        return jsonify({'code': 3, "message": "sid Not equal to None"})
+        return jsonify(messages.DATA_NONE)
     models.Student.query.filter_by(sid=sid).delete()
     db.session.commit()
-    return jsonify({'code': 0, "message": ""})
+    return jsonify(messages.OK)
 
 
 @student.route('/student/list', methods=['get', 'post'])
@@ -65,6 +66,16 @@ def ulist():
     maximum = int(total / 20) + 1
     data = []
     for i in students:
-        data.append({"id": i.id, "name": i.account})
+        data.append({"id": i.id,"sid": i.sid, "name": i.name,"class":i.class_})
     return jsonify(
         {'code': 0, "message": "", "data": {"users": data, "total": total, "current": page, "maximum": maximum}})
+
+@student.route('/student/query', methods=['post'])
+@login_required
+@check_permissions(2)
+def query():
+    sid = request.form.get("sid")
+    stu = models.Student.query.filter_by(sid=sid).first()
+    if sid is None or stu is None:
+        return jsonify(messages.DATA_NONE)
+    return jsonify({'code': 0, "message": "", "data": {"sid": stu.sid, "name": stu.name, "sex": stu.sex, "class": stu.class_}})
