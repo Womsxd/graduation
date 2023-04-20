@@ -19,7 +19,6 @@ def add():
     if stu.sid is None and stu.name is None and stu.sex is None and stu.class_ is None:
         return jsonify(messages.DATA_NONE)
     db.session.add(stu)
-    print(db.session.commit())
     return jsonify(messages.OK)
 
 

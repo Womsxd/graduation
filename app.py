@@ -2,6 +2,7 @@ import os
 import yaml
 from database import db
 from flask import Flask
+from gevent import pywsgi
 from auth import login_manager
 from auth import auth as auth_blueprint
 from exam import exam as exam_blueprint
@@ -9,9 +10,6 @@ from user import userf as user_blueprint
 from school import school as school_blueprint
 from student import student as student_blueprint
 from subject import subject as subject_blueprint
-
-from group import check_permissions
-from flask_login import login_required
 
 with open("config.yaml", 'r', encoding='utf-8') as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
@@ -43,17 +41,7 @@ app.register_blueprint(student_blueprint)
 app.register_blueprint(subject_blueprint)
 
 
-
-@app.route("/ping")
-@login_required
-@check_permissions(1)
-def ping():
-    return "Pong"
-
-
 if __name__ == '__main__':
-    from gevent import pywsgi
-
     server = pywsgi.WSGIServer((config['base']['host'], int(config['base']['port'])), app)
-    print(f"App Running on: http:{config['base']['host']}:{int(config['base']['port'])}")
+    print(f"App Running on: http://{config['base']['host']}:{int(config['base']['port'])}")
     server.serve_forever()
