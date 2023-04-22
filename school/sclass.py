@@ -1,7 +1,6 @@
 import messages
 from school import school
 from database import models, db
-from sqlalchemy.orm import aliased
 from flask import request, jsonify
 from group import check_permissions
 from flask_login import login_required
@@ -57,11 +56,10 @@ def delete():
 @check_permissions(1)
 def sclist():
     page = request.values.get("page", 1, type=int)
-    college_aliased = aliased(models.College)  # 设置别名
     pagination = models.Student.query.join(models.Clas).with_entities(
-        models.Clas.id, models.Clas.name, college_aliased.name.label('college_n')
+        models.Clas.id, models.Clas.name, models.College.name.label('college_n')
     ).paginate(page=page, per_page=20)
-    classes = [{"id": i.sid, "name": i.name, "college_name": i.college_n}
+    classes = [{"id": i.id, "name": i.name, "college_name": i.college_n}
                for i in pagination.items]
     data = {"classes": classes, "total": pagination.total, "current": page, "maximum": pagination.pages}
     returns = {"data": data}
