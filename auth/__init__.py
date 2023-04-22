@@ -49,7 +49,7 @@ def login():
         login_user(user)
         session["_uid"] = user.id
         return jsonify(messages.OK)
-    return jsonify(messages.PASSWORD_ERROR)
+    return jsonify(messages.AUTH_ERROR)
 
 
 @auth.route('/auth/logout', methods=['get', 'post'])

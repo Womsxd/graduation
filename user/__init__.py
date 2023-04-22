@@ -8,16 +8,16 @@ from flask_login import login_required, current_user
 userf = Blueprint('userf', __name__)
 
 
-@userf.route('/user/changepwd', methods=['post'])
+@userf.route('/user/change_password', methods=['post'])
 @login_required
-def changepwd():
+def change_password():
     old_pwd = request.form.get("old_pwd")
     new_pwd = request.form.get("new_pwd")
     user = models.User.query.filter_by(csrf=current_user.get_id()).first()
     if old_pwd is None or new_pwd is None or user is None:
         return jsonify(messages.DATA_NONE)
     if not auth.utils.vailidate_password(user.password, old_pwd):
-        return jsonify(messages.PASSWORD_ERROR)
+        return jsonify(messages.PASSWORD_ERROR)  # 就这里使用password提示
     user.password = auth.utils.get_password(new_pwd)
     user.csrf = None
     db.session.commit()
@@ -48,14 +48,21 @@ def edit():
     account = request.form.get('account')
     password = request.form.get('password')
     groupid = request.form.get('groupid')
-    user = models.User.query.filter_by(account=account).first()
-    if account is None or user is None:
+    if account is None:
         return jsonify(messages.DATA_NONE)
+    user = models.User.query.filter_by(account=account).first()
+    if user is None:
+        return jsonify(messages.NOT_FOUND)
     if password is not None:
-        user.password = auth.utils.get_password(password)
+        if user.csrf == current_user.get_id():  # 防止管理员在这里修改掉自己的密码，应为csrf只能同时存在一个，所以直接判断是否相等
+            return jsonify(messages.DOT_CHANGE_OWN_PASSWORD)  # 返回报错，引导用户使用change_password来修改自己的密码
+        user.password = auth.utils.get_password(password)  # 生成存储安全的密码
         user.csrf = None
     if groupid is not None:
-        user.groupid = groupid
+        if user.groupid != groupid:
+            if user.groupid == 1 and models.User.query.filter(models.User.groupid == 1).count() <= 1:
+                return jsonify(messages.NO_ADMIN)  # 防止可用用户中全都没有管理员权限
+            user.groupid = groupid
     db.session.commit()
     return jsonify(messages.OK)
 
@@ -76,14 +83,10 @@ def delete():
 @login_required
 @check_permissions(1)
 def ulist():
-    page = int(request.values.get("page", 1))
-    users = models.User.query.offset((page - 1) * 20).limit(20).all()
-    total = models.User.query.count()
-    maximum = int(total / 20) + 1
-    data = []
-    for i in users:
-        data.append({"id": i.id, "account": i.account, "group": i.groupid})
-    rej = {}
-    rej.update(messages.OK_DATA)
-    rej["data"] = {"users": data, "total": total, "current": page, "maximum": maximum}
-    return jsonify(rej)
+    page = request.values.get("page", 1, type=int)
+    pagination = models.User.query.paginate(page=page, per_page=20)
+    users = [{"id": i.id, "account": i.account, "group": i.groupid} for i in pagination.items]
+    data = {"users": users, "total": pagination.total, "current": page, "maximum": pagination.pages}
+    returns = {"data": data}
+    returns.update(messages.OK)
+    return jsonify(returns)

@@ -1,5 +1,6 @@
 import messages
 from database import models, db
+from sqlalchemy.orm import aliased
 from group import check_permissions
 from flask_login import login_required
 from flask import request, jsonify, Blueprint
@@ -58,16 +59,19 @@ def delete():
 @student.route('/student/list', methods=['get', 'post'])
 @login_required
 @check_permissions(2)
-def ulist():
-    page = int(request.values.get("page", 1))
-    students = models.Student.query.offset((page - 1) * 20).limit(20).all()
-    total = models.Student.query.count()
-    maximum = int(total / 20) + 1
-    data = []
-    for i in students:
-        data.append({"id": i.id,"sid": i.sid, "name": i.name,"class":i.class_})
-    return jsonify(
-        {'code': 0, "message": "", "data": {"users": data, "total": total, "current": page, "maximum": maximum}})
+def slist():
+    page = request.values.get("page", 1, type=int)
+    clas_aliased = aliased(models.Clas)  # 设置别名
+    pagination = models.Student.query.join(models.Clas).with_entities(
+        models.Student.sid, models.Student.name, models.Student.sex, clas_aliased.name.label('class_n')
+        # 由于class表里面的name与student相同，这里就需要设置别名来防止冲突
+    ).paginate(page=page, per_page=20)  # 这里连带查询了class表获取名称，做到一次查完全部 提升查询效率
+    students = [{"sid": i.sid, "name": i.name, "sex": i.sex, "class": i.class_n} for i in pagination.items]
+    data = {"students": students, "total": pagination.total, "current": page, "maximum": pagination.pages}
+    returns = {"data": data}
+    returns.update(messages.OK)
+    return jsonify(returns)
+
 
 @student.route('/student/query', methods=['post'])
 @login_required
@@ -77,4 +81,5 @@ def query():
     stu = models.Student.query.filter_by(sid=sid).first()
     if sid is None or stu is None:
         return jsonify(messages.DATA_NONE)
-    return jsonify({'code': 0, "message": "", "data": {"sid": stu.sid, "name": stu.name, "sex": stu.sex, "class": stu.class_}})
+    return jsonify(
+        {'code': 0, "message": "", "data": {"sid": stu.sid, "name": stu.name, "sex": stu.sex, "class": stu.class_}})

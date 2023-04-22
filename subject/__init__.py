@@ -29,12 +29,19 @@ def edit():
     id_ = request.form.get('id')
     name = request.form.get('name')
     subj = models.Subject.query.filter_by(id=id_).first()
-    if id_ is None or subj is None:
+    if id_ is None:
         return jsonify(messages.DATA_NONE)
+    if subj is None:
+        return jsonify(messages.DATABASE_ERROR)
     if name is not None:
         subj.name = name
-    db.session.commit()
-    return jsonify(messages.OK)
+    try:
+        db.session.commit()
+        return jsonify(messages.OK)
+    except:
+        db.session.rollback()
+        return jsonify(messages.DATABASE_ERROR)
+
 
 
 @subject.route('/subject/delete', methods=['post'])
@@ -44,21 +51,26 @@ def delete():
     id_ = request.form.get('id')
     if id_ is None:
         return jsonify(messages.DATA_NONE)
-    models.Subject.query.filter_by(id=id_).delete()
-    db.session.commit()
-    return jsonify(messages.OK)
+    subj = models.Subject.query.filter_by(id=id_).first()
+    if subj is None:
+        return jsonify(messages.NOT_FOUND)
+    try:
+        db.session.delete(subj)
+        db.session.commit()
+        return jsonify(messages.OK)
+    except:
+        db.session.rollback()
+        return jsonify(messages.DATABASE_ERROR)
 
 
 @subject.route('/subject/list', methods=['get', 'post'])
 @login_required
 @check_permissions(2)
-def ulist():
-    page = int(request.values.get("page", 1))
-    subjects = models.Subject.query.offset((page - 1) * 20).limit(20).all()
-    total = models.Subject.query.count()
-    maximum = int(total / 20) + 1
-    data = []
-    for i in subjects:
-        data.append({"id": i.id, "name": i.account})
-    return jsonify(
-        {'code': 0, "message": "", "data": {"users": data, "total": total, "current": page, "maximum": maximum}})
+def slist():
+    page = request.values.get("page", 1, type=int)
+    pagination = models.Subject.query.paginate(page=page, per_page=20)
+    subjects = [{"id": i.id, "name": i.account} for i in pagination.items]
+    data = {"subjects": subjects, "total": pagination.total, "current": page, "maximum": pagination.pages}
+    returns = {"data": data}
+    returns.update(messages.OK)
+    return jsonify(returns)

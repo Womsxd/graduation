@@ -1,5 +1,9 @@
 OK = {'code': 0, 'message': ''}
-OK_DATA = {'code': 0, 'message': '', 'data': {}}
-PASSWORD_ERROR = {'code': 1, "message": "Account/Password Error"}
-NO_LOGIN = {'code': 2, "message": "NoLogin"}
-DATA_NONE = {'code': 3, "message": "Data equal to None"}
+NO_LOGIN = {'code': 10001, "message": "NoLogin"}
+PASSWORD_ERROR = {'code': 10002, "message": "Password Error"}  # 这里只能给user里面修改密码使用
+AUTH_ERROR = {'code': 10002, "message": "Account/Password Error"}
+DOT_CHANGE_OWN_PASSWORD = {'code': 10002, "message": "Do not change your own password"}
+DATA_NONE = {'code': 10003, "message": "Data equal to None"}
+NOT_FOUND = {'code': 10004, "message": "Data is not Found"}
+DATABASE_ERROR = {'code': 10005, "message": "Database operation error"}
+NO_ADMIN = {'code': 10006, "message": "There will be no administrator"}
