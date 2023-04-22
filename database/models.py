@@ -11,7 +11,8 @@ class Clas(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.Text(20), nullable=False)
     college_id = db.Column(db.Integer, db.ForeignKey('college.id'))
-    college = db.relationship('College', backref='users')
+
+    college = db.relationship('College', backref='class')
 
 
 class College(db.Model):
@@ -25,10 +26,14 @@ class Examinfo(db.Model):
     __tablename__ = 'examinfo'
 
     id = db.Column(db.Integer, primary_key=True)
-    sid = db.Column(db.Text, nullable=False)
-    sessions = db.Column(db.Integer, nullable=False)
-    subject = db.Column(db.Integer, nullable=False)
+    sid = db.Column(db.Text, db.ForeignKey('student.sid'), nullable=False)
+    sessions_id = db.Column(db.Integer, db.ForeignKey('examsessions.id'), nullable=False)
+    subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=False)
     result = db.Column(db.Float, nullable=False)
+
+    student = db.relationship('Student', backref='examinfo')
+    sessions = db.relationship('Examsession', backref='examinfo')
+    subject = db.relationship('Subject', backref='examinfo')
 
 
 class Examsession(db.Model):
@@ -54,7 +59,8 @@ class Student(db.Model):
     name = db.Column(db.Text(20), nullable=False)
     sex = db.Column(db.Integer, nullable=False, server_default=text("1"))
     class_id = db.Column(db.Integer, db.ForeignKey('class.id'), nullable=False)
-    _class = db.relationship('Clas', backref='users')
+
+    _class = db.relationship('Clas', backref='student')
 
 
 class Subject(db.Model):
@@ -72,4 +78,5 @@ class User(db.Model):
     password = db.Column(db.Text, nullable=False)
     group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), nullable=False, server_default=text("3"))
     csrf = db.Column(db.Text, unique=True)
-    group = db.relationship('Group', backref='users')
+
+    group = db.relationship('Group', backref='user')
