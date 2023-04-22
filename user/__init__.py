@@ -1,6 +1,7 @@
 import messages
 import auth.utils
 from database import models, db
+from sqlalchemy.orm import aliased
 from group import check_permissions
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
@@ -84,8 +85,11 @@ def delete():
 @check_permissions(1)
 def ulist():
     page = request.values.get("page", 1, type=int)
-    pagination = models.User.query.paginate(page=page, per_page=20)
-    users = [{"id": i.id, "account": i.account, "group": i.groupid} for i in pagination.items]
+    group_aliased = aliased(models.Group)
+    pagination = models.User.query.query.join(models.Clas).with_entities(
+        models.User.id, models.User.account, group_aliased.name.label('group_n')
+    ).paginate(page=page, per_page=20)
+    users = [{"id": i.id, "account": i.account, "group": i.group_n} for i in pagination.items]
     data = {"users": users, "total": pagination.total, "current": page, "maximum": pagination.pages}
     returns = {"data": data}
     returns.update(messages.OK)

@@ -59,12 +59,11 @@ def sclist():
     page = request.values.get("page", 1, type=int)
     college_aliased = aliased(models.College)  # 设置别名
     pagination = models.Student.query.join(models.Clas).with_entities(
-        models.Clas.id, models.Clas.name, college_aliased.id.label('college_i'), college_aliased.name.label('college_n')
+        models.Clas.id, models.Clas.name, college_aliased.name.label('college_n')
     ).paginate(page=page, per_page=20)
-    classes = [{"id": i.sid, "name": i.name, "college_id": i.college_i, "college_name": i.college_n}
+    classes = [{"id": i.sid, "name": i.name, "college_name": i.college_n}
                for i in pagination.items]
     data = {"classes": classes, "total": pagination.total, "current": page, "maximum": pagination.pages}
     returns = {"data": data}
     returns.update(messages.OK)
     return jsonify(returns)
-
