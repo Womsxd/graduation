@@ -85,9 +85,8 @@ def delete():
 @check_permissions(1)
 def ulist():
     page = request.values.get("page", 1, type=int)
-    group_aliased = aliased(models.Group)
-    pagination = models.User.query.query.join(models.Clas).with_entities(
-        models.User.id, models.User.account, group_aliased.name.label('group_n')
+    pagination = models.User.query.join(models.Group).with_entities(
+        models.User.id, models.User.account, models.Group.name.label('group_n')
     ).paginate(page=page, per_page=20)
     users = [{"id": i.id, "account": i.account, "group": i.group_n} for i in pagination.items]
     data = {"users": users, "total": pagination.total, "current": page, "maximum": pagination.pages}

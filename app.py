@@ -1,7 +1,7 @@
 import os
 import yaml
-from database import db
 from flask import Flask
+from database import db
 from gevent import pywsgi
 from auth import login_manager
 from auth import auth as auth_blueprint

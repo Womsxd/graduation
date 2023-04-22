@@ -1,6 +1,5 @@
 import messages
 from database import models, db
-from sqlalchemy.orm import aliased
 from group import check_permissions
 from flask_login import login_required
 from flask import request, jsonify, Blueprint
@@ -61,9 +60,8 @@ def delete():
 @check_permissions(2)
 def slist():
     page = request.values.get("page", 1, type=int)
-    clas_aliased = aliased(models.Clas)  # 设置别名
     pagination = models.Student.query.join(models.Clas).with_entities(
-        models.Student.sid, models.Student.name, models.Student.sex, clas_aliased.name.label('class_n')
+        models.Student.sid, models.Student.name, models.Student.sex, models.Clas.name.label('class_n')
         # 由于class表里面的name与student相同，这里就需要设置别名来防止冲突
     ).paginate(page=page, per_page=20)  # 这里连带查询了class表获取名称，做到一次查完全部 提升查询效率
     students = [{"sid": i.sid, "name": i.name, "sex": i.sex, "class": i.class_n} for i in pagination.items]
@@ -82,4 +80,4 @@ def query():
     if sid is None or stu is None:
         return jsonify(messages.DATA_NONE)
     return jsonify(
-        {'code': 0, "message": "", "data": {"sid": stu.sid, "name": stu.name, "sex": stu.sex, "class": stu.class_}})
+        {'code': 0, "message": "", "data": {"sid": stu.sid, "name": stu.name, "sex": stu.sex, "class": stu.class_id}})

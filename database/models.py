@@ -2,7 +2,6 @@
 from sqlalchemy import text
 from flask_sqlalchemy import SQLAlchemy
 
-
 db = SQLAlchemy()
 
 
@@ -11,7 +10,8 @@ class Clas(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.Text(20), nullable=False)
-    college = db.Column(db.Integer)
+    college_id = db.Column(db.Integer, db.ForeignKey('college.id'))
+    college = db.relationship('College', backref='users')
 
 
 class College(db.Model):
@@ -53,7 +53,8 @@ class Student(db.Model):
     sid = db.Column(db.Text, nullable=False, unique=True)
     name = db.Column(db.Text(20), nullable=False)
     sex = db.Column(db.Integer, nullable=False, server_default=text("1"))
-    class_ = db.Column('class', db.Integer, nullable=False)
+    class_id = db.Column(db.Integer, db.ForeignKey('class.id'), nullable=False)
+    _class = db.relationship('Clas', backref='users')
 
 
 class Subject(db.Model):
@@ -69,5 +70,6 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     account = db.Column(db.Text(20), nullable=False, unique=True)
     password = db.Column(db.Text, nullable=False)
-    groupid = db.Column(db.Integer, nullable=False, server_default=text("3"))
+    group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), nullable=False, server_default=text("3"))
     csrf = db.Column(db.Text, unique=True)
+    group = db.relationship('Group', backref='users')
