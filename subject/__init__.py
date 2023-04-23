@@ -39,7 +39,7 @@ def edit():
         return jsonify(messages.DATA_NONE)
     subj = models.Subject.query.filter_by(id=id_).first()
     if subj is None:
-        return jsonify(messages.DATABASE_ERROR)
+        return jsonify(messages.NOT_FOUND)
     if name is not None:
         subj.name = name
     try:

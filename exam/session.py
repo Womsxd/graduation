@@ -36,7 +36,7 @@ def edit():
         return jsonify(messages.DATA_NONE)
     esession = models.Examsession.query.filter_by(id=id).first()
     if esession is None:
-        return jsonify(messages.DATA_NONE)
+        return jsonify(messages.NOT_FOUND)
     name = request.form.get('name')
     if name is not None:
         esession.name = name

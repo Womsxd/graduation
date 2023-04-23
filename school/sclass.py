@@ -38,7 +38,7 @@ def edit():
         return jsonify(messages.DATA_NONE)
     class_ = models.Clas.query.filter_by(id=cid).first()
     if class_ is None:
-        return jsonify(messages.DATA_NONE)
+        return jsonify(messages.NOT_FOUND)
     name = request.form.get('name')
     college = request.form.get('college')
     if name is not None:
