@@ -10,7 +10,7 @@ class Clas(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.Text(20), nullable=False)
-    college_id = db.Column(db.Integer, db.ForeignKey('college.id'))
+    college_id = db.Column(db.Integer, db.ForeignKey('college.id'), nullable=False, server_default=text("1"))
 
     college = db.relationship('College', backref='class')
 
@@ -27,8 +27,8 @@ class Examinfo(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     sid = db.Column(db.Text, db.ForeignKey('student.sid'), nullable=False)
-    sessions_id = db.Column(db.Integer, db.ForeignKey('examsessions.id'), nullable=False)
-    subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=False)
+    sessions_id = db.Column(db.Integer, db.ForeignKey('examsessions.id'), nullable=False, server_default=text("1"))
+    subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=False, server_default=text("1"))
     result = db.Column(db.Float, nullable=False)
 
     student = db.relationship('Student', backref='examinfo')
@@ -58,7 +58,7 @@ class Student(db.Model):
     sid = db.Column(db.Text, nullable=False, unique=True)
     name = db.Column(db.Text(20), nullable=False)
     sex = db.Column(db.Integer, nullable=False, server_default=text("1"))
-    class_id = db.Column(db.Integer, db.ForeignKey('class.id'), nullable=False)
+    class_id = db.Column(db.Integer, db.ForeignKey('class.id'), nullable=False, server_default=text("1"))
 
     _class = db.relationship('Clas', backref='student')
 

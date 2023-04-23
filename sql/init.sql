@@ -10,8 +10,9 @@ create table class
     id         INTEGER not null
         primary key autoincrement,
     name       TEXT    not null,
-    college_id INTEGER
+    college_id INTEGER default 1 not null
         references college
+            on delete set default
 );
 
 create table examsessions
@@ -36,8 +37,9 @@ create table student
     sid      TEXT    not null,
     name     TEXT    not null,
     sex      INTEGER default 1 not null,
-    class_id INTEGER not null
+    class_id INTEGER default 1 not null
         references class
+            on delete set default
 );
 
 create unique index student_sid_uindex
@@ -55,11 +57,14 @@ create table examinfo
     id          INTEGER not null
         primary key autoincrement,
     sid         TEXT    not null
-        references student (sid),
-    sessions_id INTEGER not null
-        references examsessions,
-    subject_id  INTEGER not null
-        references subject,
+        references student (sid)
+            on delete cascade,
+    sessions_id INTEGER default 1 not null
+        references examsessions
+            on delete set default,
+    subject_id  INTEGER default 1 not null
+        references subject
+            on delete set default,
     result      REAL    not null
 );
 
