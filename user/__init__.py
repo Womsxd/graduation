@@ -10,14 +10,14 @@ from flask_login import login_required, current_user
 userf = Blueprint('userf', __name__)
 
 
-@userf.route('/user/change_password', methods=['post'])
+@userf.route('/user/change_password', methods=['POST'])
 @login_required
 def change_password():
     old_pwd = request.form.get("old_pwd")
     new_pwd = request.form.get("new_pwd")
-    user = models.User.query.filter_by(csrf=current_user.get_id()).first()
     if not (old_pwd and new_pwd):
         return jsonify(messages.DATA_NONE)
+    user = models.User.query.filter_by(csrf=current_user.get_id()).first()
     if not auth.utils.vailidate_password(user.password, old_pwd):
         return jsonify(messages.PASSWORD_ERROR)  # 就这里使用password提示
     user.password = auth.utils.get_password(new_pwd)
@@ -30,7 +30,7 @@ def change_password():
         return jsonify(messages.DATABASE_ERROR)
 
 
-@userf.route('/user/add', methods=['post'])
+@userf.route('/user/add', methods=['POST'])
 @login_required
 @check_permissions(1)
 def add():
@@ -55,18 +55,18 @@ def add():
         return jsonify(messages.DATABASE_ERROR)
 
 
-@userf.route('/user/edit', methods=['post'])
+@userf.route('/user/edit', methods=['POST'])
 @login_required
 @check_permissions(1)
 def edit():
     username = request.form.get('username')
-    password = request.form.get('password')
-    group_id = request.form.get('group_id')
     if username is None:
         return jsonify(messages.DATA_NONE)
     user = models.User.query.filter_by(account=username).first()
     if user is None:
         return jsonify(messages.NOT_FOUND)
+    password = request.form.get('password')
+    group_id = request.form.get('group_id')
     if password is not None:
         if user.csrf == current_user.get_id():  # 防止管理员在这里修改掉自己的密码，应为csrf只能同时存在一个，所以直接判断是否相等
             return jsonify(messages.DOT_CHANGE_OWN_PASSWORD)  # 返回报错，引导用户使用change_password来修改自己的密码
@@ -87,7 +87,7 @@ def edit():
         return jsonify(messages.DATABASE_ERROR)
 
 
-@userf.route('/user/delete', methods=['post'])
+@userf.route('/user/delete', methods=['POST'])
 @login_required
 @check_permissions(1)
 def delete():
@@ -103,7 +103,7 @@ def delete():
         return jsonify(messages.DATABASE_ERROR)
 
 
-@userf.route('/user/list', methods=['get', 'post'])
+@userf.route('/user/list', methods=['GET', 'POST'])
 @login_required
 @check_permissions(1)
 def ulist():

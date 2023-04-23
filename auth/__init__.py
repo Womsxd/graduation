@@ -35,7 +35,7 @@ def user_loader(csrf):
     return None
 
 
-@auth.route('/auth/login', methods=['post'])
+@auth.route('/auth/login', methods=['POST'])
 def login():
     username = request.form.get('username')
     password = request.form.get('password')
@@ -52,7 +52,7 @@ def login():
     return jsonify(messages.AUTH_ERROR)
 
 
-@auth.route('/auth/logout', methods=['get', 'post'])
+@auth.route('/auth/logout', methods=['GET', 'POST'])
 @login_required
 def logout():
     User.query.filter_by(csrf=current_user.get_id()).update({'csrf': None})

@@ -6,7 +6,7 @@ from group import check_permissions
 from flask_login import login_required
 
 
-@exam.route('/exam/session/add', methods=['post'])
+@exam.route('/exam/session/add', methods=['POST'])
 @login_required
 @check_permissions(1)
 def add():
@@ -20,7 +20,7 @@ def add():
     return jsonify(messages.OK)
 
 
-@exam.route('/exam/session/edit', methods=['post'])
+@exam.route('/exam/session/edit', methods=['POST'])
 @login_required
 @check_permissions(1)
 def edit():
@@ -35,7 +35,7 @@ def edit():
     return jsonify(messages.OK)
 
 
-@exam.route('/exam/session/delete', methods=['post'])
+@exam.route('/exam/session/delete', methods=['POST'])
 @login_required
 @check_permissions(1)
 def delete():
@@ -47,7 +47,7 @@ def delete():
     return jsonify(messages.OK)
 
 
-@exam.route('/exam/session/list', methods=['get', 'post'])
+@exam.route('/exam/session/list', methods=['GET', 'POST'])
 @login_required
 @check_permissions(1)
 def ulist():

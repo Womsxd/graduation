@@ -8,15 +8,18 @@ from flask import request, jsonify, Blueprint
 subject = Blueprint('subject', __name__)
 
 
-@subject.route('/subject/add', methods=['post'])
+@subject.route('/subject/add', methods=['POST'])
 @login_required
 @check_permissions(1)
 def add():
-    subj = models.Subject()
-    subj.id_ = request.form.get('id')
-    subj.name = request.form.get('name')
-    if subj.sid is None and subj.name is None:
+
+    id_ = request.form.get('id')
+    name = request.form.get('name')
+    if not (id_ and name):
         return jsonify(messages.DATA_NONE)
+    subj = models.Subject()
+    subj.id_ = id_
+    subj.name = name
     try:
         with db.session.begin():
             db.session.add(subj)
@@ -26,15 +29,15 @@ def add():
         return jsonify(messages.DATABASE_ERROR)
 
 
-@subject.route('/subject/edit', methods=['post'])
+@subject.route('/subject/edit', methods=['POST'])
 @login_required
 @check_permissions(2)
 def edit():
     id_ = request.form.get('id')
     name = request.form.get('name')
-    subj = models.Subject.query.filter_by(id=id_).first()
     if id_ is None:
         return jsonify(messages.DATA_NONE)
+    subj = models.Subject.query.filter_by(id=id_).first()
     if subj is None:
         return jsonify(messages.DATABASE_ERROR)
     if name is not None:
@@ -47,7 +50,7 @@ def edit():
         return jsonify(messages.DATABASE_ERROR)
 
 
-@subject.route('/subject/delete', methods=['post'])
+@subject.route('/subject/delete', methods=['POST'])
 @login_required
 @check_permissions(1)
 def delete():
@@ -66,7 +69,7 @@ def delete():
         return jsonify(messages.DATABASE_ERROR)
 
 
-@subject.route('/subject/list', methods=['get', 'post'])
+@subject.route('/subject/list', methods=['GET', 'POST'])
 @login_required
 @check_permissions(2)
 def slist():

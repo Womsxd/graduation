@@ -6,7 +6,7 @@ from group import check_permissions
 from flask_login import login_required
 
 
-@school.route('/school/class/add', methods=['post'])
+@school.route('/school/class/add', methods=['POST'])
 @login_required
 @check_permissions(1)
 def add():
@@ -21,7 +21,7 @@ def add():
     return jsonify(messages.OK)
 
 
-@school.route('/school/class/edit', methods=['post'])
+@school.route('/school/class/edit', methods=['POST'])
 @login_required
 @check_permissions(1)
 def edit():
@@ -39,7 +39,7 @@ def edit():
     return jsonify(messages.OK)
 
 
-@school.route('/school/class/delete', methods=['post'])
+@school.route('/school/class/delete', methods=['POST'])
 @login_required
 @check_permissions(1)
 def delete():
@@ -51,7 +51,7 @@ def delete():
     return jsonify(messages.OK)
 
 
-@school.route('/school/class/list', methods=['get', 'post'])
+@school.route('/school/class/list', methods=['GET', 'POST'])
 @login_required
 @check_permissions(1)
 def sclist():

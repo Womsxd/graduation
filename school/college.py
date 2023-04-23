@@ -6,7 +6,7 @@ from flask import request, jsonify
 from flask_login import login_required
 
 
-@school.route('/school/college/add', methods=['post'])
+@school.route('/school/college/add', methods=['POST'])
 @login_required
 @check_permissions(1)
 def add():
@@ -22,7 +22,7 @@ def add():
     return jsonify(messages.OK)
 
 
-@school.route('/school/college/edit', methods=['post'])
+@school.route('/school/college/edit', methods=['POST'])
 @login_required
 @check_permissions(1)
 def edit():
@@ -37,7 +37,7 @@ def edit():
     return jsonify(messages.OK)
 
 
-@school.route('/school/college/delete', methods=['post'])
+@school.route('/school/college/delete', methods=['POST'])
 @login_required
 @check_permissions(1)
 def delete():
@@ -49,7 +49,7 @@ def delete():
     return jsonify(messages.OK)
 
 
-@school.route('/school/college/list', methods=['get', 'post'])
+@school.route('/school/college/list', methods=['GET', 'POST'])
 @login_required
 @check_permissions(1)
 def ulist():
