@@ -1,5 +1,5 @@
+import utils
 import messages
-import auth.utils
 from database import models, db
 from group import check_permissions
 from sqlalchemy.exc import SQLAlchemyError
@@ -18,9 +18,9 @@ def change_password():
     if not (old_pwd and new_pwd):
         return jsonify(messages.DATA_NONE)
     user = models.User.query.filter_by(csrf=current_user.get_id()).first()
-    if not auth.utils.vailidate_password(user.password, old_pwd):
+    if not utils.validate_password(user.password, old_pwd):
         return jsonify(messages.PASSWORD_ERROR)  # 就这里使用password提示
-    user.password = auth.utils.get_password(new_pwd)
+    user.password = utils.get_password(new_pwd)
     user.csrf = None
     try:
         db.session.commit()
@@ -40,7 +40,7 @@ def add():
         return jsonify(messages.DATA_NONE)
     user = models.User()
     user.account = username
-    user.password = auth.autils.get_password(password)
+    user.password = utils.get_password(password)
     group_id = request.form.get('group_id')
     if group_id:
         if models.Group.query.filter_by(id=group_id).first() is None:
@@ -70,7 +70,7 @@ def edit():
     if password is not None:
         if user.csrf == current_user.get_id():  # 防止管理员在这里修改掉自己的密码，应为csrf只能同时存在一个，所以直接判断是否相等
             return jsonify(messages.DOT_CHANGE_OWN_PASSWORD)  # 返回报错，引导用户使用change_password来修改自己的密码
-        user.password = auth.utils.get_password(password)  # 生成存储安全的密码
+        user.password = utils.get_password(password)  # 生成存储安全的密码
         user.csrf = None
     if group_id is not None:
         if user.groupid != group_id:
