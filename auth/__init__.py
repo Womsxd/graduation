@@ -37,9 +37,9 @@ def user_loader(csrf):
 
 @auth.route('/auth/login', methods=['post'])
 def login():
-    account = request.form.get('account')
+    username = request.form.get('username')
     password = request.form.get('password')
-    user = User.query.filter_by(account=account).first()
+    user = User.query.filter_by(account=username).first()
     if user is not None and user.vailidate_password(password):
         session.permanent = True
         user.csrf = gutils.sha256(f'{user.id}-{time.time()}-{user.password}')

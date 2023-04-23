@@ -1,10 +1,11 @@
 import messages
 import auth.utils
 from database import models, db
-from sqlalchemy.orm import aliased
 from group import check_permissions
+from sqlalchemy.exc import SQLAlchemyError
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
+
 
 userf = Blueprint('userf', __name__)
 
@@ -29,29 +30,37 @@ def change_password():
 @login_required
 @check_permissions(1)
 def add():
-    user = models.User()
-    user.account = request.form.get('account')
+    username = request.form.get('username')
     password = request.form.get('password')
-    groupid = request.form.get('groupid')
-    if user.account is None and password is None:
+    if not (username and password):
         return jsonify(messages.DATA_NONE)
+    user = models.User()
+    user.account = username
     user.password = auth.autils.get_password(password)
-    if groupid is not None:
-        user.groupid = groupid
-    db.session.add(user)
-    return jsonify(messages.OK)
+    group_id = request.form.get('group_id')
+    if group_id:
+        if models.Group.query.filter_by(id=group_id).first() is None:
+            return jsonify(messages.NO_GROUP)
+        user.group_id = group_id
+    try:
+        with db.session.begin():
+            db.session.add(user)
+        return jsonify(messages.OK)
+    except SQLAlchemyError:
+        db.session.rollback()
+        return jsonify(messages.DATABASE_ERROR)
 
 
 @userf.route('/user/edit', methods=['post'])
 @login_required
 @check_permissions(1)
 def edit():
-    account = request.form.get('account')
+    username = request.form.get('username')
     password = request.form.get('password')
-    groupid = request.form.get('groupid')
-    if account is None:
+    group_id = request.form.get('group_id')
+    if username is None:
         return jsonify(messages.DATA_NONE)
-    user = models.User.query.filter_by(account=account).first()
+    user = models.User.query.filter_by(account=username).first()
     if user is None:
         return jsonify(messages.NOT_FOUND)
     if password is not None:
@@ -59,11 +68,11 @@ def edit():
             return jsonify(messages.DOT_CHANGE_OWN_PASSWORD)  # 返回报错，引导用户使用change_password来修改自己的密码
         user.password = auth.utils.get_password(password)  # 生成存储安全的密码
         user.csrf = None
-    if groupid is not None:
-        if user.groupid != groupid:
+    if group_id is not None:
+        if user.groupid != group_id:
             if user.groupid == 1 and models.User.query.filter(models.User.groupid == 1).count() <= 1:
                 return jsonify(messages.NO_ADMIN)  # 防止可用用户中全都没有管理员权限
-            user.groupid = groupid
+            user.group_id = group_id
     db.session.commit()
     return jsonify(messages.OK)
 
@@ -72,10 +81,10 @@ def edit():
 @login_required
 @check_permissions(1)
 def delete():
-    account = request.form.get('account')
-    if account is None:
+    username = request.form.get('username')
+    if username is None:
         return jsonify(messages.DATA_NONE)
-    models.User.query.filter_by(account=account).delete()
+    models.User.query.filter_by(account=username).delete()
     db.session.commit()
     return jsonify(messages.OK)
 

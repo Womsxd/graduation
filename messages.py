@@ -7,3 +7,4 @@ DATA_NONE = {'code': 10003, "message": "Data equal to None"}
 NOT_FOUND = {'code': 10004, "message": "Data is not Found"}
 DATABASE_ERROR = {'code': 10005, "message": "Database operation error"}
 NO_ADMIN = {'code': 10006, "message": "There will be no administrator"}
+NO_GROUP = {'code': 10007, "message": "There is no permission group"}
