@@ -1,11 +1,3 @@
-create table class
-(
-    id      INTEGER not null
-        primary key autoincrement,
-    name    TEXT    not null,
-    college INTEGER
-);
-
 create table college
 (
     id   INTEGER not null
@@ -13,14 +5,13 @@ create table college
     name TEXT    not null
 );
 
-create table examinfo
+create table class
 (
-    id       INTEGER not null
+    id         INTEGER not null
         primary key autoincrement,
-    sid      TEXT    not null,
-    sessions INTEGER not null,
-    subject  INTEGER not null,
-    result   REAL    not null
+    name       TEXT    not null,
+    college_id INTEGER
+        references college
 );
 
 create table examsessions
@@ -32,20 +23,21 @@ create table examsessions
 
 create table groups
 (
-    id   INTEGER not null
+    id      INTEGER not null
         primary key autoincrement,
-    name TEXT    not null,
+    name    TEXT    not null,
     inherit TEXT
 );
 
 create table student
 (
-    id    INTEGER not null
+    id       INTEGER not null
         primary key autoincrement,
-    sid   TEXT    not null,
-    name  TEXT    not null,
-    sex   INTEGER default 1 not null,
-    class INTEGER not null
+    sid      TEXT    not null,
+    name     TEXT    not null,
+    sex      INTEGER default 1 not null,
+    class_id INTEGER not null
+        references class
 );
 
 create unique index student_sid_uindex
@@ -58,13 +50,27 @@ create table subject
     name TEXT    not null
 );
 
+create table examinfo
+(
+    id          INTEGER not null
+        primary key autoincrement,
+    sid         TEXT    not null
+        references student (sid),
+    sessions_id INTEGER not null
+        references examsessions,
+    subject_id  INTEGER not null
+        references subject,
+    result      REAL    not null
+);
+
 create table user
 (
     id       INTEGER not null
         primary key autoincrement,
     account  TEXT    not null,
     password TEXT    not null,
-    groupid  INTEGER default 3 not null,
+    group_id INTEGER default 3 not null
+        references groups,
     csrf     TEXT
 );
 
