@@ -6,7 +6,6 @@ from sqlalchemy.exc import SQLAlchemyError
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
 
-
 userf = Blueprint('userf', __name__)
 
 
@@ -119,6 +118,7 @@ def ulist():
     returns = {"data": data}
     returns.update(messages.OK)
     return jsonify(returns)
+
 
 @userf.route('/user/search', methods=['GET', 'POST'])
 @login_required
