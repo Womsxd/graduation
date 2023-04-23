@@ -119,3 +119,20 @@ def ulist():
     returns = {"data": data}
     returns.update(messages.OK)
     return jsonify(returns)
+
+@userf.route('/user/search', methods=['GET', 'POST'])
+@login_required
+@check_permissions(1)
+def search():
+    key = request.values.get("key")
+    if key is None:
+        return jsonify(messages.NOT_SEARCH_KEY)
+    page = request.values.get("page", 1, type=int)
+    pagination = models.User.query.join(models.Group).with_entities(
+        models.User.id, models.User.account, models.Group.name.label('group_n')
+    ).filter(models.User.account.like(f"%{key}%")).paginate(page=page, per_page=20)
+    users = [{"id": i.id, "account": i.account, "group": i.group_n} for i in pagination.items]
+    data = {"users": users, "total": pagination.total, "current": page, "maximum": pagination.pages}
+    returns = {"data": data}
+    returns.update(messages.OK)
+    return jsonify(returns)

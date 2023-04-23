@@ -44,7 +44,7 @@ def login():
     user = User.query.filter_by(account=username).first()
     if user is None:
         return jsonify(messages.AUTH_ERROR)
-    if not user.vailidate_password(password):
+    if not user.validate_password(password):
         return jsonify(messages.AUTH_ERROR)
     session.permanent = True
     user.csrf = utils.sha256(f'{user.id}-{time.time()}-{user.password}')

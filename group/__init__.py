@@ -7,7 +7,7 @@ def check_permissions(group_id):
     def check(func):
         @functools.wraps(func)
         def inner(*args, **kwargs):
-            gid = models.User.query.filter_by(id=session["_uid"]).first().groupid
+            gid = models.User.query.filter_by(id=session["_uid"]).first().group_id
             need_group = models.Group.query.filter_by(id=gid).first()
             if group_check(need_group, group_id):
                 return func(*args, **kwargs)

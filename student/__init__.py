@@ -99,6 +99,25 @@ def slist():
     return jsonify(returns)
 
 
+@student.route('/student/search', methods=['GET', 'POST'])
+@login_required
+@check_permissions(2)
+def search():
+    key = request.values.get("key")
+    if key is None:
+        return jsonify(messages.NOT_SEARCH_KEY)  # 讲真不加关键词就用搜索还不如直接用list api
+    page = request.values.get("page", 1, type=int)
+    pagination = models.Student.query.join(models.Clas).with_entities(
+        models.Student.sid, models.Student.name, models.Student.sex, models.Clas.name.label('class_n')
+    ).filter(models.Student.name.like(f"%{key}%")).paginate(page=page, per_page=20)
+    students = [{"id": i.id, "sid": i.sid, "name": i.name, "sex": utils.SexMap.to_string(i.sex),
+                 "class": i.class_n} for i in pagination.items]
+    data = {"students": students, "total": pagination.total, "current": page, "maximum": pagination.pages}
+    returns = {"data": data}
+    returns.update(messages.OK)
+    return jsonify(returns)
+
+
 @student.route('/student/query', methods=['POST'])
 @login_required
 @check_permissions(2)
