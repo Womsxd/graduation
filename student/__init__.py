@@ -1,3 +1,4 @@
+import utils
 import messages
 from database import models, db
 from group import check_permissions
@@ -90,7 +91,8 @@ def slist():
         models.Student.sid, models.Student.name, models.Student.sex, models.Clas.name.label('class_n')
         # 由于class表里面的name与student相同，这里就需要设置别名来防止冲突
     ).paginate(page=page, per_page=20)  # 这里连带查询了class表获取名称，做到一次查完全部 提升查询效率
-    students = [{"id": i.id, "sid": i.sid, "name": i.name, "sex": i.sex, "class": i.class_n} for i in pagination.items]
+    students = [{"id": i.id, "sid": i.sid, "name": i.name, "sex": utils.SexEnum(i.sex).value,
+                 "class": i.class_n} for i in pagination.items]
     data = {"students": students, "total": pagination.total, "current": page, "maximum": pagination.pages}
     returns = {"data": data}
     returns.update(messages.OK)
@@ -101,9 +103,16 @@ def slist():
 @login_required
 @check_permissions(2)
 def query():
-    sid = request.form.get("sid")
-    stu = models.Student.query.filter_by(sid=sid).first()
-    if sid is None or stu is None:
+    sid = request.form.get("sid")  # 防止某些学校奇奇怪怪的带字母的学号规则
+    if sid is None:
+        return jsonify(messages.DATA_NONE)
+    stu = models.Student.query.join(models.Clas).with_entities(
+        models.Student.id, models.Student.sid, models.Student.name, models.Student.sex,
+        models.Clas.name.label('class_n')
+    ).filter_by(sid=sid).first()
+    if stu is None:
         return jsonify(messages.DATA_NONE)
     return jsonify(
-        {'code': 0, "message": "", "data": {"sid": stu.sid, "name": stu.name, "sex": stu.sex, "class": stu.class_id}})
+        {'code': 0, "message": "",
+         "data": {"id": stu.id, "sid": stu.sid, "name": stu.name, "sex": utils.SexEnum(stu.sex).value,
+                  "class": stu.class_n}})
