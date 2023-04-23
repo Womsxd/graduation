@@ -4,21 +4,29 @@ from database import models, db
 from flask import request, jsonify
 from group import check_permissions
 from flask_login import login_required
+from sqlalchemy.exc import SQLAlchemyError
 
 
 @school.route('/school/class/add', methods=['POST'])
 @login_required
 @check_permissions(1)
 def add():
-    clas = models.Clas()
-    clas.id = request.form.get('id')
-    clas.name = request.form.get('name')
-    clas.college = request.form.get('college')
-    if clas.id is None or clas.name is None:
+    id_ = request.form.get('id')
+    name = request.form.get('name')
+    college = request.form.get('college')
+    if not (id_ and name and college):
         return jsonify(messages.DATA_NONE)
-    db.session.add(clas)
-    db.session.commit()
-    return jsonify(messages.OK)
+    class_ = models.Clas()
+    class_.id = id_
+    class_.name = name
+    class_.college = college
+    try:
+        with db.session.begin():
+            db.session.add(class_)
+        return jsonify(messages.OK)
+    except SQLAlchemyError:
+        db.session.rollback()
+        return jsonify(messages.DATABASE_ERROR)
 
 
 @school.route('/school/class/edit', methods=['POST'])
@@ -26,17 +34,23 @@ def add():
 @check_permissions(1)
 def edit():
     cid = request.form.get('id')
+    if cid is None:
+        return jsonify(messages.DATA_NONE)
+    class_ = models.Clas.query.filter_by(id=cid).first()
+    if class_ is None:
+        return jsonify(messages.DATA_NONE)
     name = request.form.get('name')
     college = request.form.get('college')
-    clas = models.Clas.query.filter_by(id=cid).first()
-    if cid is None or clas is None:
-        return jsonify(messages.DATA_NONE)
     if name is not None:
-        clas.name = name
+        class_.name = name
     if college is not None:
-        clas.college = college
-    db.session.commit()
-    return jsonify(messages.OK)
+        class_.college = college
+    try:
+        db.session.commit()
+        return jsonify(messages.OK)
+    except SQLAlchemyError:
+        db.session.rollback()
+        return jsonify(messages.DATABASE_ERROR)
 
 
 @school.route('/school/class/delete', methods=['POST'])
@@ -46,9 +60,16 @@ def delete():
     cid = request.form.get('id')
     if cid is None:
         return jsonify(messages.DATA_NONE)
-    models.Clas.query.filter_by(id=cid).delete()
-    db.session.commit()
-    return jsonify(messages.OK)
+    class_ = models.Clas.query.filter_by(id=cid).first()
+    if class_ is None:
+        return jsonify(messages.NOT_FOUND)
+    try:
+        db.session.delete(class_)
+        db.session.commit()
+        return jsonify(messages.OK)
+    except SQLAlchemyError:
+        db.session.rollback()
+        return jsonify(messages.DATABASE_ERROR)
 
 
 @school.route('/school/class/list', methods=['GET', 'POST'])

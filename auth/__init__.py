@@ -39,17 +39,22 @@ def user_loader(csrf):
 def login():
     username = request.form.get('username')
     password = request.form.get('password')
+    if not (username and password):
+        return jsonify(messages.DATA_NONE)
     user = User.query.filter_by(account=username).first()
-    if user is not None and user.vailidate_password(password):
-        session.permanent = True
-        user.csrf = gutils.sha256(f'{user.id}-{time.time()}-{user.password}')
-        # 登入后刷新csrf 让旧的失效 采用用户数字id+时间戳+密码进行哈希生成 防止重复
-        db.session.commit()
-        # 提交修改到数据库
-        login_user(user)
-        session["_uid"] = user.id
-        return jsonify(messages.OK)
-    return jsonify(messages.AUTH_ERROR)
+    if user is None:
+        return jsonify(messages.AUTH_ERROR)
+    if not user.vailidate_password(password):
+        return jsonify(messages.AUTH_ERROR)
+    session.permanent = True
+    user.csrf = gutils.sha256(f'{user.id}-{time.time()}-{user.password}')
+    # 登入后刷新csrf 让旧的失效 采用用户数字id+时间戳+密码进行哈希生成 防止重复
+    db.session.commit()
+    # 提交修改到数据库
+    login_user(user)
+    session["_uid"] = user.id
+    return jsonify(messages.OK)
+    
 
 
 @auth.route('/auth/logout', methods=['GET', 'POST'])

@@ -94,8 +94,11 @@ def delete():
     username = request.form.get('username')
     if username is None:
         return jsonify(messages.DATA_NONE)
-    models.User.query.filter_by(account=username).delete()
+    user = models.User.query.filter_by(account=username).first()
+    if user is None:
+        return jsonify(messages.NOT_FOUND)
     try:
+        db.session.delete(user)
         db.session.commit()
         return jsonify(messages.OK)
     except SQLAlchemyError:

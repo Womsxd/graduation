@@ -72,8 +72,8 @@ def delete():
     stu = models.Student.query.filter_by(sid=sid).first()
     if not stu:
         return jsonify(messages.NOT_FOUND)
-    db.session.delete(student)
     try:
+        db.session.delete(student)
         db.session.commit()
         return jsonify(messages.OK)
     except SQLAlchemyError:
