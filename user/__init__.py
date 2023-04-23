@@ -16,14 +16,14 @@ def change_password():
     old_pwd = request.form.get("old_pwd")
     new_pwd = request.form.get("new_pwd")
     user = models.User.query.filter_by(csrf=current_user.get_id()).first()
-    if old_pwd is None or new_pwd is None or user is None:
+    if not (old_pwd and new_pwd and user):
         return jsonify(messages.DATA_NONE)
     if not auth.utils.vailidate_password(user.password, old_pwd):
         return jsonify(messages.PASSWORD_ERROR)  # 就这里使用password提示
     user.password = auth.utils.get_password(new_pwd)
     user.csrf = None
     db.session.commit()
-    return jsonify({'code': 0, "message": ""})
+    return jsonify(messages.OK)
 
 
 @userf.route('/user/add', methods=['post'])
