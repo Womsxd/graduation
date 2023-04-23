@@ -2,8 +2,8 @@ import messages
 from database import models, db
 from group import check_permissions
 from flask_login import login_required
+from sqlalchemy.exc import SQLAlchemyError
 from flask import request, jsonify, Blueprint
-
 
 subject = Blueprint('subject', __name__)
 
@@ -17,9 +17,13 @@ def add():
     subj.name = request.form.get('name')
     if subj.sid is None and subj.name is None:
         return jsonify(messages.DATA_NONE)
-    db.session.add(subj)
-    print(db.session.commit())
-    return jsonify(messages.OK)
+    try:
+        with db.session.begin():
+            db.session.add(subj)
+        return jsonify(messages.OK)
+    except SQLAlchemyError:
+        db.session.rollback()
+        return jsonify(messages.DATABASE_ERROR)
 
 
 @subject.route('/subject/edit', methods=['post'])
@@ -38,10 +42,9 @@ def edit():
     try:
         db.session.commit()
         return jsonify(messages.OK)
-    except:
+    except SQLAlchemyError:
         db.session.rollback()
         return jsonify(messages.DATABASE_ERROR)
-
 
 
 @subject.route('/subject/delete', methods=['post'])
@@ -58,7 +61,7 @@ def delete():
         db.session.delete(subj)
         db.session.commit()
         return jsonify(messages.OK)
-    except:
+    except SQLAlchemyError:
         db.session.rollback()
         return jsonify(messages.DATABASE_ERROR)
 

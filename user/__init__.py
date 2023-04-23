@@ -16,14 +16,18 @@ def change_password():
     old_pwd = request.form.get("old_pwd")
     new_pwd = request.form.get("new_pwd")
     user = models.User.query.filter_by(csrf=current_user.get_id()).first()
-    if not (old_pwd and new_pwd and user):
+    if not (old_pwd and new_pwd):
         return jsonify(messages.DATA_NONE)
     if not auth.utils.vailidate_password(user.password, old_pwd):
         return jsonify(messages.PASSWORD_ERROR)  # 就这里使用password提示
     user.password = auth.utils.get_password(new_pwd)
     user.csrf = None
-    db.session.commit()
-    return jsonify(messages.OK)
+    try:
+        db.session.commit()
+        return jsonify(messages.OK)
+    except SQLAlchemyError:
+        db.session.rollback()
+        return jsonify(messages.DATABASE_ERROR)
 
 
 @userf.route('/user/add', methods=['post'])
@@ -70,11 +74,17 @@ def edit():
         user.csrf = None
     if group_id is not None:
         if user.groupid != group_id:
+            if models.Group.query.filter_by(id=group_id).first() is None:
+                return jsonify(messages.NO_GROUP)
             if user.groupid == 1 and models.User.query.filter(models.User.groupid == 1).count() <= 1:
                 return jsonify(messages.NO_ADMIN)  # 防止可用用户中全都没有管理员权限
             user.group_id = group_id
-    db.session.commit()
-    return jsonify(messages.OK)
+    try:
+        db.session.commit()
+        return jsonify(messages.OK)
+    except SQLAlchemyError:
+        db.session.rollback()
+        return jsonify(messages.DATABASE_ERROR)
 
 
 @userf.route('/user/delete', methods=['post'])
@@ -85,8 +95,12 @@ def delete():
     if username is None:
         return jsonify(messages.DATA_NONE)
     models.User.query.filter_by(account=username).delete()
-    db.session.commit()
-    return jsonify(messages.OK)
+    try:
+        db.session.commit()
+        return jsonify(messages.OK)
+    except SQLAlchemyError:
+        db.session.rollback()
+        return jsonify(messages.DATABASE_ERROR)
 
 
 @userf.route('/user/list', methods=['get', 'post'])
