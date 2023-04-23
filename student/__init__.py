@@ -91,7 +91,7 @@ def slist():
         models.Student.sid, models.Student.name, models.Student.sex, models.Clas.name.label('class_n')
         # 由于class表里面的name与student相同，这里就需要设置别名来防止冲突
     ).paginate(page=page, per_page=20)  # 这里连带查询了class表获取名称，做到一次查完全部 提升查询效率
-    students = [{"id": i.id, "sid": i.sid, "name": i.name, "sex": utils.SexEnum(i.sex).value,
+    students = [{"id": i.id, "sid": i.sid, "name": i.name, "sex": utils.SexMap.to_string(i.sex),
                  "class": i.class_n} for i in pagination.items]
     data = {"students": students, "total": pagination.total, "current": page, "maximum": pagination.pages}
     returns = {"data": data}
@@ -103,7 +103,7 @@ def slist():
 @login_required
 @check_permissions(2)
 def query():
-    sid = request.form.get("sid")  # 防止某些学校奇奇怪怪的带字母的学号规则
+    sid = request.form.get("sid")
     if sid is None:
         return jsonify(messages.DATA_NONE)
     stu = models.Student.query.join(models.Clas).with_entities(
@@ -114,5 +114,5 @@ def query():
         return jsonify(messages.DATA_NONE)
     return jsonify(
         {'code': 0, "message": "",
-         "data": {"id": stu.id, "sid": stu.sid, "name": stu.name, "sex": utils.SexEnum(stu.sex).value,
+         "data": {"id": stu.id, "sid": stu.sid, "name": stu.name, "sex": utils.SexMap.to_string(stu.sex),
                   "class": stu.class_n}})

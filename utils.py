@@ -1,12 +1,17 @@
 import hashlib
-from enum import Enum
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
-class SexEnum(Enum):
-    #  定义 枚举类 快速的把数字映射到对应性别 同时可为阿美莉卡的超多种性别做快速扩充(((
-    MALE = "男"
-    FEMALE = "女"
+class SexMap:  # 简单，方便，拓展性强的快速性别映射工具类 支持美利坚现状((
+    gender_list = {1: "男", 2: "女"}
+
+    @staticmethod
+    def to_string(sex_id: int) -> str:
+        return SexMap.gender_list.get(sex_id, "男")
+
+    @staticmethod
+    def to_number(sex: str) -> int:
+        return next((k for k, v in SexMap.gender_list.items() if v == sex), 1)
 
 
 def sha256(text):
