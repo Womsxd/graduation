@@ -27,7 +27,7 @@ create table groups
     id      INTEGER not null
         primary key autoincrement,
     name    TEXT    not null,
-    inherit TEXT
+    inherit INTEGER
 );
 
 create table student

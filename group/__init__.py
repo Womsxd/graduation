@@ -20,7 +20,7 @@ def check_permissions(group_id):
 
 def group_check(group: models.Group, need_id: int) -> bool:
     while group is not None:
-        if group.id == need_id or int(group.inherit) == need_id:
+        if group.id == need_id or group.inherit == need_id:
             return True
-        group = models.Group.query.filter_by(id=int(group.inherit)).first()
+        group = models.Group.query.filter_by(id=group.inherit).first()
     return False
