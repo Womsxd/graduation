@@ -78,6 +78,12 @@ def edit():
             if user.groupid == 1 and models.User.query.filter(models.User.groupid == 1).count() <= 1:
                 return jsonify(messages.NO_ADMIN)  # 防止可用用户中全都没有管理员权限
             user.group_id = group_id
+    disable_otp = request.form.get('disable_otp')
+    if disable_otp is not None or user.otp_status != 0:  # 只能强行关闭otp不能强行打开
+        if disable_otp.lower() == 'true':
+            user.otp_status = 0
+            user.otp_secret = None
+            user.otp_act_exp_time = None
     try:
         db.session.commit()
         return jsonify(messages.OK)

@@ -1,4 +1,7 @@
+import base64
+import qrcode
 import hashlib
+from io import BytesIO
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
@@ -18,6 +21,13 @@ def sha256(text):
     sha = hashlib.sha256()
     sha.update(text.encode("utf-8"))
     return sha.hexdigest()
+
+
+def get_b64_qrcode(text: str) -> str:
+    out = BytesIO()
+    img = qrcode.make(data=text, error_correction=qrcode.constants.ERROR_CORRECT_L)
+    img.save(out, 'PNG')
+    return u"data:image/png;base64," + base64.b64encode(out.getvalue()).decode('ascii')
 
 
 def get_password(password):
