@@ -96,6 +96,9 @@ class User(db.Model):  # 用户组
     password = db.Column(db.Text, nullable=False)
     group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), nullable=False, server_default=text("3"))
     csrf = db.Column(db.Text, unique=True)
+    otp_status = db.Column(db.Integer, server_default=text("0"))
+    otp_secret = db.Column(db.Text, unique=True)
+    otp_act_exp_time = db.Column(db.Integer)
 
     group = db.relationship('Group', backref='user')
 

@@ -1,4 +1,5 @@
 import time
+import pyotp
 import utils
 import messages
 from database import models, db
@@ -42,10 +43,16 @@ def login():
     if not (username and password):
         return jsonify(messages.DATA_NONE)
     user = User.query.filter_by(account=username).first()
-    if user is None:
+    if user is None:  # 检测用户是否存在
         return jsonify(messages.AUTH_ERROR)
-    if not user.validate_password(password):
+    if not user.validate_password(password):  # 检测密码是否错误
         return jsonify(messages.AUTH_ERROR)
+    if user.otp_status == 1:  # 检测是否开启双因数身份验证
+        otp_code = request.form.get('otp_code')
+        if otp_code is None:
+            return jsonify(messages.NEED_OTP)
+        if not pyotp.TOTP(user.otp_secret).verify(otp_code):  # 检测双因数认识是否成功
+            return jsonify(messages.OTP_VERIFY_ERROR)
     session.permanent = True
     user.csrf = utils.sha256(f'{user.id}-{time.time()}-{user.password}')
     # 登入后刷新csrf 让旧的失效 采用用户数字id+时间戳+密码进行哈希生成 防止重复

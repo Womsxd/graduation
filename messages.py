@@ -1,4 +1,6 @@
 OK = {'code': 0, 'message': ''}
+NEED_OTP = {'code': 1001, "message": "otp verification is required"}
+OTP_VERIFY_ERROR = {'code': 1002, "message": "The OTP check fails. Procedure"}
 NO_LOGIN = {'code': 10001, "message": "NoLogin"}
 PASSWORD_ERROR = {'code': 10002, "message": "Password Error"}  # 这里只能给user里面修改密码使用
 AUTH_ERROR = {'code': 10002, "message": "Account/Password Error"}

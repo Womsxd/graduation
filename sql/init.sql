@@ -76,7 +76,11 @@ create table user
     password TEXT    not null,
     group_id INTEGER default 3 not null
         references groups,
-    csrf     TEXT
+    csrf     TEXT,
+    otp_status       INT     default 0,
+    otp_secret         TEXT,
+    otp_act_exp_time INTEGER
+
 );
 
 create unique index user_account_uindex
@@ -85,3 +89,5 @@ create unique index user_account_uindex
 create unique index user_csrf_uindex
     on user (csrf);
 
+create unique index user_otp_secret_uindex
+    on user (otp_secret);
