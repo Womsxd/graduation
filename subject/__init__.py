@@ -17,9 +17,9 @@ def add():
     name = request.form.get('name')
     if not (id_ and name):
         return jsonify(messages.DATA_NONE)
-    subj = models.Subject(id=id_,name=name)
+    subj = models.Subject(id=id_, name=name)
     try:
-        with db.session.begin():
+        with db.session.begin(nested=True):
             db.session.add(subj)
         return jsonify(messages.OK)
     except SQLAlchemyError:
@@ -75,8 +75,8 @@ def get_list():
     querying = models.Subject.query
     search = request.values.get("search")
     if search is not None:
-       querying = querying.filter(models.Subject.name.like(f"%{search}%"))
-    pagination  = querying.paginate(page=page, per_page=20)
+        querying = querying.filter(models.Subject.name.like(f"%{search}%"))
+    pagination = querying.paginate(page=page, per_page=20)
     subjects = [{"id": i.id, "name": i.name} for i in pagination.items]
     data = {"subjects": subjects, "total": pagination.total, "current": page, "maximum": pagination.pages}
     returns = {"data": data}
@@ -116,8 +116,8 @@ def import_xls():
     if len(result[1:]) == 0:
         return jsonify(messages.XLS_IMPORT_EMPTY)
     try:
-        with db.session.begin()[1:]:
-            for i in result:
+        with db.session.begin(nested=True):
+            for i in result[1:]:
                 subj = models.Subject(name=i[0])
                 db.session.add(subj)
         return jsonify(messages.OK)

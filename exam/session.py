@@ -16,9 +16,9 @@ def add():
     name = request.form.get('name')
     if not (id_ and name):
         return jsonify(messages.DATA_NONE)
-    esession = models.Examsession(id=id_,name=name)
+    esession = models.Examsession(id=id_, name=name)
     try:
-        with db.session.begin():
+        with db.session.begin(nested=True):
             db.session.add(esession)
         return jsonify(messages.OK)
     except SQLAlchemyError:
@@ -74,13 +74,14 @@ def get_list():
     querying = models.Examsession.query
     search = request.values.get("search")
     if search is not None:
-       querying = querying.filter(models.Examsession.name.like(f"%{search}%"))
-    pagination  = querying.paginate(page=page, per_page=20)
+        querying = querying.filter(models.Examsession.name.like(f"%{search}%"))
+    pagination = querying.paginate(page=page, per_page=20)
     sessions = [{"id": i.id, "name": i.name} for i in pagination.items]
     data = {"sessions": sessions, "total": pagination.total, "current": page, "maximum": pagination.pages}
     returns = {"data": data}
     returns.update(messages.OK)
     return jsonify(returns)
+
 
 @exam.route('/exam/session/query', methods=['GET', 'POST'])
 @login_required
@@ -95,6 +96,7 @@ def query():
     returns = {"data": {"id": esession.id, "name": esession.name}}
     returns.update(messages.OK)
     return jsonify(returns)
+
 
 @exam.route('/exam/session/import_xls', methods=['POST'])
 @login_required
@@ -113,8 +115,8 @@ def import_xls():
     if len(result[1:]) == 0:
         return jsonify(messages.XLS_IMPORT_EMPTY)
     try:
-        with db.session.begin()[1:]:
-            for i in result:
+        with db.session.begin(nested=True):
+            for i in result[1:]:
                 esession = models.Examsession(name=i[0])
                 db.session.add(esession)
         return jsonify(messages.OK)

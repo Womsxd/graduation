@@ -8,6 +8,8 @@ from flask import Blueprint, request, jsonify
 
 userf = Blueprint('userf', __name__)
 
+from . import otp
+
 
 @userf.route('/user/change_password', methods=['POST'])
 @login_required
@@ -49,7 +51,7 @@ def add():
             return jsonify(messages.NO_GROUP)
         user.group_id = int(group_id)
     try:
-        with db.session.begin():
+        with db.session.begin(nested=True):
             db.session.add(user)
         return jsonify(messages.OK)
     except SQLAlchemyError:
@@ -123,11 +125,11 @@ def get_list():
         models.User.id, models.User.account, models.Group.name.label('group_n'))
     search = request.values.get("search")
     if search is not None:
-       querying = querying.filter(models.User.account.like(f"%{search}%"))
+        querying = querying.filter(models.User.account.like(f"%{search}%"))
     group_id = request.values.get("group_id")
     if group_id is not None:
-       querying = querying.filter_by(group_id=group_id)  # 都写死3个了，这里也直接写死的了
-    pagination  = querying.paginate(page=page, per_page=20)
+        querying = querying.filter_by(group_id=group_id)  # 都写死3个了，这里也直接写死的了
+    pagination = querying.paginate(page=page, per_page=20)
     users = [{"id": i.id, "account": i.account, "group": i.group_n} for i in pagination.items]
     returns = {"data": {"users": users, "total": pagination.total, "current": page, "maximum": pagination.pages}}
     returns.update(messages.OK)
@@ -171,7 +173,7 @@ def import_xls():
     all_groups = models.Group.query.all()  # 这玩意量少，就单独领出来先全部导入进来
     #  models.Group.query.filter_by(or_(models.Group.name == i[2], models.Group.name.ilike(i[2]))).first() 给量多的
     try:
-        with db.session.begin():
+        with db.session.begin(nested=True):
             for i in result[1:]:
                 if models.User.query.filter_by(account=i[0]).first() is None:
                     error_users.append(i[0])

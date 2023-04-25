@@ -21,7 +21,7 @@ def add():
     class_.name = name
     class_.college = college
     try:
-        with db.session.begin():
+        with db.session.begin(nested=True):
             db.session.add(class_)
         return jsonify(messages.OK)
     except SQLAlchemyError:

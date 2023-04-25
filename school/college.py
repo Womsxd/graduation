@@ -1,6 +1,6 @@
 import utils
 import messages
-from school import school
+from . import school
 from database import models, db
 from flask import request, jsonify
 from group import check_permissions
@@ -18,7 +18,7 @@ def add():
         return jsonify(messages.DATA_NONE)
     college = models.College(id=cid, name=name)
     try:
-        with db.session.begin():
+        with db.session.begin(nested=True):
             db.session.add(college)
         return jsonify(messages.OK)
     except SQLAlchemyError:
@@ -74,8 +74,8 @@ def get_list():
     querying = models.College.query
     search = request.values.get("search")
     if search is not None:
-       querying = querying.filter(models.College.name.like(f"%{search}%"))
-    pagination  = querying.paginate(page=page, per_page=20)
+        querying = querying.filter(models.College.name.like(f"%{search}%"))
+    pagination = querying.paginate(page=page, per_page=20)
     colleges = [{"id": i.id, "name": i.account} for i in pagination.items]
     data = {"colleges": colleges, "total": pagination.total, "current": page, "maximum": pagination.pages}
     returns = {"data": data}
@@ -115,7 +115,7 @@ def import_xls():
     if len(result[1:]) == 0:
         return jsonify(messages.XLS_IMPORT_EMPTY)
     try:
-        with db.session.begin():
+        with db.session.begin(nested=True):
             for i in result[1:]:
                 college = models.College(name=i[0])
                 db.session.add(college)

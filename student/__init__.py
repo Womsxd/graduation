@@ -25,7 +25,7 @@ def add():
     stu.sex = sex
     stu.class_ = class_
     try:
-        with db.session.begin():
+        with db.session.begin(nested=True):
             db.session.add(stu)
         return jsonify(messages.OK)
     except SQLAlchemyError:
@@ -85,31 +85,21 @@ def delete():
 @student.route('/student/list', methods=['GET', 'POST'])
 @login_required
 @check_permissions(2)
-def slist():
+def get_list():
     page = request.values.get("page", 1, type=int)
-    pagination = models.Student.query.join(models.Clas).with_entities(
-        models.Student.sid, models.Student.name, models.Student.sex, models.Clas.name.label('class_n')
-        # 由于class表里面的name与student相同，这里就需要设置别名来防止冲突
-    ).paginate(page=page, per_page=20)  # 这里连带查询了class表获取名称，做到一次查完全部 提升查询效率
-    students = [{"id": i.id, "sid": i.sid, "name": i.name, "sex": utils.SexMap.to_string(i.sex),
-                 "class": i.class_n} for i in pagination.items]
-    data = {"students": students, "total": pagination.total, "current": page, "maximum": pagination.pages}
-    returns = {"data": data}
-    returns.update(messages.OK)
-    return jsonify(returns)
-
-
-@student.route('/student/search', methods=['GET', 'POST'])
-@login_required
-@check_permissions(2)
-def search():
-    key = request.values.get("key")
-    if key is None:
-        return jsonify(messages.NOT_SEARCH_KEY)  # 讲真不加关键词就用搜索还不如直接用list api
-    page = request.values.get("page", 1, type=int)
-    pagination = models.Student.query.join(models.Clas).with_entities(
-        models.Student.sid, models.Student.name, models.Student.sex, models.Clas.name.label('class_n')
-    ).filter(models.Student.name.like(f"%{key}%")).paginate(page=page, per_page=20)
+    querying = models.Student.query.join(models.Clas).join(models.College).with_entities(
+        models.Student.sid, models.Student.name, models.Student.sex, models.Student.class_id,
+        models.Clas.name.label('class_n'), models.College.name.label('college_n'))
+    search = request.values.get("search")
+    if search is not None:
+        querying = querying.filter(models.Student.account.like(f"%{search}%"))
+    sex = request.values.get("sex")
+    if sex is not None:
+        querying = querying.filter_by(sex=sex)
+    class_id = request.values.get("class_id")
+    if class_id is not None:
+        querying = querying.filter_by(class_id=class_id)
+    pagination = querying.paginate(page=page, per_page=20)
     students = [{"id": i.id, "sid": i.sid, "name": i.name, "sex": utils.SexMap.to_string(i.sex),
                  "class": i.class_n} for i in pagination.items]
     data = {"students": students, "total": pagination.total, "current": page, "maximum": pagination.pages}
@@ -127,11 +117,10 @@ def query():
         return jsonify(messages.DATA_NONE)
     stu = models.Student.query.join(models.Clas).with_entities(
         models.Student.id, models.Student.sid, models.Student.name, models.Student.sex,
-        models.Clas.name.label('class_n')
-    ).filter_by(sid=sid).first()
+        models.Clas.name.label('class_n')).filter_by(sid=sid).first()
     if stu is None:
         return jsonify(messages.DATA_NONE)
-    return jsonify(
-        {'code': 0, "message": "",
-         "data": {"id": stu.id, "sid": stu.sid, "name": stu.name, "sex": utils.SexMap.to_string(stu.sex),
-                  "class": stu.class_n}})
+    returns = {"data": {"id": stu.id, "sid": stu.sid, "name": stu.name, "sex": utils.SexMap.to_string(stu.sex),
+                        "class": stu.class_n}}
+    returns.update(messages.OK)
+    return jsonify(returns)

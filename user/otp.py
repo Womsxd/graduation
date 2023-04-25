@@ -2,7 +2,7 @@ import time
 import pyotp
 import utils
 import messages
-from user import userf
+from . import userf
 from database import models, db
 from sqlalchemy.exc import SQLAlchemyError
 from flask_login import login_required
