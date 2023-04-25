@@ -37,7 +37,11 @@ def otp_enable():
     user = models.User.query.filter_by(id=session["_uid"]).first()
     if user.otp_status == 1:
         return jsonify(messages.OTP_OPEN)
-    user.otp_secret = pyotp.random_base32()
+    while True:
+        otp_secret = pyotp.random_base32()
+        if models.User.query.filter_by(otp_secret=otp_secret).first() is None:
+            break  # 一般来说是不会重复的，不过为了以防万一，还是写个判断吧
+    user.otp_secret = otp_secret
     otp_fast_url = pyotp.totp.TOTP(user.otp_secret). \
         provisioning_uri(name=user.account, issuer_name='Graduation of Womsxd')
     user.otp_act_exp_time = int(time.time()) + 300
@@ -107,6 +111,11 @@ def add():
     password = request.form.get('password')
     if not (username and password):
         return jsonify(messages.DATA_NONE)
+    if models.User.query.filter_by(account=username).first() is not None:
+        returns = messages.OK.copy()
+        returns["message"] = f'Account is {returns["message"]}'
+
+        return jsonify()
     user = models.User(account=username, password=utils.get_password(password))
     group_id = request.form.get('group_id')
     if group_id:
@@ -224,16 +233,21 @@ def import_xls():
         return jsonify(messages.NOT_XLS_FILE)
     if not result:
         return jsonify(messages.XLS_NAME_ERROR)
-    if ["用户名", "密码", "用户组"] != result[0][:2]:
+    if ["用户名", "密码", "用户组"] != result[0][:3]:
         return jsonify(messages.XLS_TITLE_ERROR)
     if len(result[1:]) == 0:
         return jsonify(messages.XLS_IMPORT_EMPTY)
     ok, error = 0, 0
+    error_users = []
     all_groups = models.Group.query.all()  # 这玩意量少，就单独领出来先全部导入进来
     #  models.Group.query.filter_by(or_(models.Group.name == i[2], models.Group.name.ilike(i[2]))).first() 给量多的
     try:
         with db.session.begin():
             for i in result:
+                if models.User.query.filter_by(account=i[0]).first() is None:
+                    error_users.append(i[0])
+                    error += 1
+                    continue
                 group_id = 3
                 if i[2] != "":
                     for g in all_groups:
