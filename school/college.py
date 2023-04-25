@@ -1,3 +1,4 @@
+import utils
 import messages
 from school import school
 from database import models, db
@@ -15,9 +16,7 @@ def add():
     name = request.form.get('name')
     if not (cid and name):
         return jsonify(messages.DATA_NONE)
-    college = models.College()
-    college.id = cid
-    college.name = name
+    college = models.College(id=cid, name=name)
     try:
         with db.session.begin():
             db.session.add(college)
@@ -70,11 +69,57 @@ def delete():
 @school.route('/school/college/list', methods=['GET', 'POST'])
 @login_required
 @check_permissions(1)
-def sclist():
+def get_list():
     page = request.values.get("page", 1, type=int)
-    pagination = models.College.query.paginate(page=page, per_page=20)
+    search = models.College.query
+    key = request.values.get("key")
+    if key is not None:
+        search = search.filter(models.College.name.like(f"%{key}%"))
+    pagination = search.paginate(page=page, per_page=20)
     colleges = [{"id": i.id, "name": i.account} for i in pagination.items]
     data = {"colleges": colleges, "total": pagination.total, "current": page, "maximum": pagination.pages}
     returns = {"data": data}
     returns.update(messages.OK)
     return jsonify(returns)
+
+
+@school.route('/school/college/query', methods=['GET', 'POST'])
+@login_required
+@check_permissions(2)
+def query():
+    cid = request.values.get("id")
+    if cid is None:
+        return jsonify(messages.DATA_NONE)
+    college = models.Subject.query.filter_by(id=cid).first()
+    if college is None:
+        return jsonify(messages.DATA_NONE)
+    returns = {"data": {"id": college.id, "name": college.name}}
+    returns.update(messages.OK)
+    return jsonify(returns)
+
+
+@school.route('/school/college/import_xls', methods=['POST'])
+@login_required
+@check_permissions(1)
+def import_xls():
+    file = request.files.get('file')
+    if file is None:
+        return jsonify(messages.DATA_NONE)
+    result = utils.load_xls_file(file.read(), "学院")
+    if result is None:
+        return jsonify(messages.NOT_XLS_FILE)
+    if not result:
+        return jsonify(messages.XLS_NAME_ERROR)
+    if ["学院名称"] != result[0][:1]:
+        return jsonify(messages.XLS_TITLE_ERROR)
+    if len(result[1:]) == 0:
+        return jsonify(messages.XLS_IMPORT_EMPTY)
+    try:
+        with db.session.begin():
+            for i in result[1:]:
+                user = models.Subject(name=i[0])
+                db.session.add(user)
+        return jsonify(messages.OK)
+    except SQLAlchemyError:
+        db.session.rollback()
+        return jsonify(messages.DATABASE_ERROR)
