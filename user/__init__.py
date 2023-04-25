@@ -119,15 +119,15 @@ def delete():
 @check_permissions(1)
 def get_list():
     page = request.values.get("page", 1, type=int)
-    search = models.User.query.join(models.Group).with_entities(
+    querying = models.User.query.join(models.Group).with_entities(
         models.User.id, models.User.account, models.Group.name.label('group_n'))
-    key = request.values.get("key")
-    if key is not None:
-        search = search.filter(models.User.account.like(f"%{key}%"))
+    search = request.values.get("search")
+    if search is not None:
+       querying = querying.filter(models.User.account.like(f"%{search}%"))
     group_id = request.values.get("group_id")
     if group_id is not None:
-        search = search.filter_by(group_id=group_id)  # 都写死3个了，这里也直接写死的了
-    pagination = search.paginate(page=page, per_page=20)
+       querying = querying.filter_by(group_id=group_id)  # 都写死3个了，这里也直接写死的了
+    pagination  = querying.paginate(page=page, per_page=20)
     users = [{"id": i.id, "account": i.account, "group": i.group_n} for i in pagination.items]
     returns = {"data": {"users": users, "total": pagination.total, "current": page, "maximum": pagination.pages}}
     returns.update(messages.OK)
