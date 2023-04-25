@@ -170,21 +170,23 @@ def import_xls():
         return jsonify(messages.XLS_IMPORT_EMPTY)
     ok, error = 0, 0
     error_users = []
-    all_groups = models.Group.query.all()  # 这玩意量少，就单独领出来先全部导入进来
-    #  models.Group.query.filter_by(or_(models.Group.name == i[2], models.Group.name.ilike(i[2]))).first() 给量多的
     try:
         with db.session.begin(nested=True):
+            group_cache = {}
             for i in result[1:]:
-                if models.User.query.filter_by(account=i[0]).first() is None:
+                if i[0] in error_users or models.User.query.filter_by(account=i[0]).first() is None:
                     error_users.append(i[0])
                     error += 1
                     continue
                 group_id = 3
                 if i[2] != "":
-                    for g in all_groups:
-                        if g.name.lower() == i[2].lower():
-                            group_id = g.id
-                            break
+                    if i[2] in group_cache.keys():
+                        group_id = group_cache
+                    else:
+                        group = models.Group.query.filter_by(name=i[2]).first()
+                        if group is not None:
+                            group_id = group.id
+                    group_cache[i[2]] = group_id
                 user = models.User(account=i[0], password=utils.get_password(i[1]), group_id=group_id)
                 ok += 1
                 db.session.add(user)
