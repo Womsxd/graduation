@@ -17,9 +17,7 @@ def add():
     name = request.form.get('name')
     if not (id_ and name):
         return jsonify(messages.DATA_NONE)
-    subj = models.Subject()
-    subj.id_ = id_
-    subj.name = name
+    subj = models.Subject(id=id_,name=name)
     try:
         with db.session.begin():
             db.session.add(subj)
@@ -118,7 +116,7 @@ def import_xls():
     if len(result[1:]) == 0:
         return jsonify(messages.XLS_IMPORT_EMPTY)
     try:
-        with db.session.begin():
+        with db.session.begin()[1:]:
             for i in result:
                 user = models.Subject(name=i[0])
                 db.session.add(user)
