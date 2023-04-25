@@ -13,3 +13,5 @@ NO_GROUP = {'code': 10007, "message": "There is no permission group"}
 NOT_SEARCH_KEY = {"code": 10008, "message": "No search terms"}
 NOT_XLS_FILE = {"code": 10009, "message": "This is not an xls/xlsx file"}
 XLS_NAME_ERROR = {"code": 10010, "message": "The xls/xlsx file table name is incorrect"}
+XLS_TITLE_ERROR = {"code": 10011, "message": "The xls/xlsx file table title name is incorrect"}
+XLS_IMPORT_EMPTY = {"coed": 10012, "message": "The import content is empty"}

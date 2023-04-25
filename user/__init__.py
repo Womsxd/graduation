@@ -37,14 +37,12 @@ def add():
     password = request.form.get('password')
     if not (username and password):
         return jsonify(messages.DATA_NONE)
-    user = models.User()
-    user.account = username
-    user.password = utils.get_password(password)
+    user = models.User(account=username, password=utils.get_password(password))
     group_id = request.form.get('group_id')
     if group_id:
         if models.Group.query.filter_by(id=group_id).first() is None:
             return jsonify(messages.NO_GROUP)
-        user.group_id = group_id
+        user.group_id = int(group_id)
     try:
         with db.session.begin():
             db.session.add(user)
@@ -142,3 +140,44 @@ def search():
     returns = {"data": data}
     returns.update(messages.OK)
     return jsonify(returns)
+
+
+@userf.route('/user/import_xls', methods=['POST'])
+@login_required
+@check_permissions(1)
+def import_xls():
+    file = request.files.get('file')
+    if file is None:
+        return jsonify(messages.DATA_NONE)
+    result = utils.load_xls_file(file.read(), "用户")
+    if result is None:
+        return jsonify(messages.NOT_XLS_FILE)
+    if not result:
+        return jsonify(messages.XLS_NAME_ERROR)
+    if ["用户名", "密码", "用户组"] != result[0][:2]:
+        return jsonify(messages.XLS_TITLE_ERROR)
+    if len(result[1:]) == 0:
+        return jsonify(messages.XLS_IMPORT_EMPTY)
+    ok, error = 0, 0
+    all_groups = models.Group.query.all()  # 这玩意量少，就单独领出来先全部导入进来
+    #  models.Group.query.filter_by(or_(models.Group.name == i[2], models.Group.name.ilike(i[2]))).first() 给量多的
+    try:
+        with db.session.begin():
+            for i in result:
+                group = None
+                for g in all_groups:
+                    if g.name.lower() == i[2].lower():
+                        group = g
+                        break
+                if not group:
+                    error += 1
+                    continue
+                user = models.User(account=i[0], password=utils.get_password(i[1]), group_id=group.id)
+                ok += 1
+                db.session.add(user)
+        returns = {"data": {"ok": ok, "error": error}}
+        returns.update(messages.OK)
+        return jsonify(returns)
+    except SQLAlchemyError:
+        db.session.rollback()
+        return jsonify(messages.DATABASE_ERROR)

@@ -20,7 +20,7 @@ class Clas(db.Model):  # 班级
     college_id = db.Column(db.Integer, db.ForeignKey('college.id', ondelete='SET DEFAULT'), nullable=False
                            , server_default=text("1"))
 
-    college = db.relationship('College', backref='class')
+    college = db.relationship('College', backref=db.backref('class', lazy=True))
 
     __table_args__ = (
         {'mysql_engine': 'InnoDB'}
@@ -53,7 +53,7 @@ class Student(db.Model):  # 学生信息
     class_id = db.Column(db.Integer, db.ForeignKey('class.id', ondelete='SET DEFAULT'),
                          nullable=False, server_default=text("1"))
 
-    _class = db.relationship('Clas', backref='student')
+    _class = db.relationship('Clas', backref=db.backref('student', lazy=True))
 
     __table_args__ = (
         {'mysql_engine': 'InnoDB'}
@@ -71,9 +71,9 @@ class Examinfo(db.Model):  # 考试成绩
                            nullable=False, server_default=text("1"))
     result = db.Column(db.Float, nullable=False)
 
-    student = db.relationship('Student', backref='examinfo')
-    sessions = db.relationship('Examsession', backref='examinfo')
-    subject = db.relationship('Subject', backref='examinfo')
+    student = db.relationship('Student', backref=db.backref('examinfo', lazy=True))
+    sessions = db.relationship('Examsession', backref=db.backref('examinfo', lazy=True))
+    subject = db.relationship('Subject', backref=db.backref('examinfo', lazy=True))
 
     __table_args__ = (
         {'mysql_engine': 'InnoDB'}
@@ -100,7 +100,7 @@ class User(db.Model):  # 用户组
     otp_secret = db.Column(db.Text, unique=True)
     otp_act_exp_time = db.Column(db.Integer)
 
-    group = db.relationship('Group', backref='user')
+    group = db.relationship('Group', backref=db.backref('user', lazy=True))
 
     __table_args__ = (
         {'mysql_engine': 'InnoDB'}
