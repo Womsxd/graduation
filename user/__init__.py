@@ -191,29 +191,14 @@ def delete():
 @userf.route('/user/list', methods=['GET', 'POST'])
 @login_required
 @check_permissions(1)
-def ulist():
+def get_list():
     page = request.values.get("page", 1, type=int)
-    pagination = models.User.query.join(models.Group).with_entities(
-        models.User.id, models.User.account, models.Group.name.label('group_n')
-    ).paginate(page=page, per_page=20)
-    users = [{"id": i.id, "account": i.account, "group": i.group_n} for i in pagination.items]
-    data = {"users": users, "total": pagination.total, "current": page, "maximum": pagination.pages}
-    returns = {"data": data}
-    returns.update(messages.OK)
-    return jsonify(returns)
-
-
-@userf.route('/user/search', methods=['GET', 'POST'])
-@login_required
-@check_permissions(1)
-def search():
+    search = models.User.query.join(models.Group).with_entities(
+        models.User.id, models.User.account, models.Group.name.label('group_n'))
     key = request.values.get("key")
-    if key is None:
-        return jsonify(messages.NOT_SEARCH_KEY)
-    page = request.values.get("page", 1, type=int)
-    pagination = models.User.query.join(models.Group).with_entities(
-        models.User.id, models.User.account, models.Group.name.label('group_n')
-    ).filter(models.User.account.like(f"%{key}%")).paginate(page=page, per_page=20)
+    if key is not None:
+        search = search.filter(models.User.account.like(f"%{key}%"))
+    pagination = search.paginate(page=page, per_page=20)
     users = [{"id": i.id, "account": i.account, "group": i.group_n} for i in pagination.items]
     data = {"users": users, "total": pagination.total, "current": page, "maximum": pagination.pages}
     returns = {"data": data}
@@ -257,7 +242,7 @@ def import_xls():
                 user = models.User(account=i[0], password=utils.get_password(i[1]), group_id=group_id)
                 ok += 1
                 db.session.add(user)
-        returns = {"data": {"ok": ok, "error": error}}
+        returns = {"data": {"ok": ok, "error": error, "error_users": error_users}}
         returns.update(messages.OK)
         return jsonify(returns)
     except SQLAlchemyError:
