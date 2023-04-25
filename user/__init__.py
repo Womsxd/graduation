@@ -200,11 +200,26 @@ def get_list():
         search = search.filter(models.User.account.like(f"%{key}%"))
     group_id = request.values.get("group_id")
     if group_id is not None:
-        search = search.filter(group_id=group_id)  # 都写死3个了，这里也直接写死的了
+        search = search.filter_by(group_id=group_id)  # 都写死3个了，这里也直接写死的了
     pagination = search.paginate(page=page, per_page=20)
     users = [{"id": i.id, "account": i.account, "group": i.group_n} for i in pagination.items]
-    data = {"users": users, "total": pagination.total, "current": page, "maximum": pagination.pages}
-    returns = {"data": data}
+    returns = {"data": {"users": users, "total": pagination.total, "current": page, "maximum": pagination.pages}}
+    returns.update(messages.OK)
+    return jsonify(returns)
+
+
+@userf.route('/user/query', methods=['GET', 'POST'])
+@login_required
+@check_permissions(1)
+def query():
+    id_ = request.values.get("id")
+    if id_ is None:
+        return jsonify(messages.DATA_NONE)
+    user = models.User.query.join(models.Group).with_entities(
+        models.User.id, models.User.account, models.Group.name.label('group_n')).filter_by(id=id_).first()
+    if user is None:
+        return jsonify(messages.DATA_NONE)
+    returns = {"data": {"id": user.id, "name": user.name, "group": user.group_n, "otp_status": user.otp_status}}
     returns.update(messages.OK)
     return jsonify(returns)
 
