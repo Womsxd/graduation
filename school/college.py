@@ -71,11 +71,11 @@ def delete():
 @check_permissions(1)
 def get_list():
     page = request.values.get("page", 1, type=int)
-    search = models.College.query
-    key = request.values.get("key")
-    if key is not None:
-        search = search.filter(models.College.name.like(f"%{key}%"))
-    pagination = search.paginate(page=page, per_page=20)
+    querying = models.College.query
+    search = request.values.get("search")
+    if search is not None:
+       querying = querying.filter(models.College.name.like(f"%{search}%"))
+    pagination  = querying.paginate(page=page, per_page=20)
     colleges = [{"id": i.id, "name": i.account} for i in pagination.items]
     data = {"colleges": colleges, "total": pagination.total, "current": page, "maximum": pagination.pages}
     returns = {"data": data}
@@ -117,8 +117,8 @@ def import_xls():
     try:
         with db.session.begin():
             for i in result[1:]:
-                user = models.Subject(name=i[0])
-                db.session.add(user)
+                college = models.College(name=i[0])
+                db.session.add(college)
         return jsonify(messages.OK)
     except SQLAlchemyError:
         db.session.rollback()
