@@ -1,20 +1,34 @@
+# 正常就返回这个
 OK = {'code': 0, 'message': ''}
-NEED_OTP = {'code': 1001, "message": "otp verification is required"}
-OTP_VERIFY_ERROR = {'code': 1002, "message": "The OTP check fails. Procedure"}
-OTP_NEED_OPEN = {'code': 1003, "message": "Please enable otp"}
-OTP_OPEN = {'code': 1003, "message": "The otp is enabled. Procedure"}
-OTP_TIME_OUT = {'code': 1004, "message": "otp activation timed out"}
-NO_LOGIN = {'code': 10001, "message": "NoLogin"}
-PASSWORD_ERROR = {'code': 10002, "message": "Password Error"}  # 这里只能给user里面修改密码使用
-AUTH_ERROR = {'code': 10002, "message": "Account/Password Error"}
-DOT_CHANGE_OWN_PASSWORD = {'code': 10002, "message": "Do not change your own password"}
-DATA_NONE = {'code': 10003, "message": "Data equal to None"}
-NOT_FOUND = {'code': 10004, "message": "Data is not Found"}
-DATABASE_ERROR = {'code': 10005, "message": "Database operation error"}
-NO_ADMIN = {'code': 10006, "message": "There will be no administrator"}
-NO_GROUP = {'code': 10007, "message": "There is no permission group"}
-NOT_SEARCH_KEY = {"code": 10008, "message": "No search terms"}
-NOT_XLS_FILE = {"code": 10009, "message": "This is not an xls/xlsx file"}
-XLS_NAME_ERROR = {"code": 10010, "message": "The xls/xlsx file table name is incorrect"}
-XLS_TITLE_ERROR = {"code": 10011, "message": "The xls/xlsx file table title name is incorrect"}
-XLS_IMPORT_EMPTY = {"coed": 10012, "message": "The import content is empty"}
+
+# OTP 相关返回
+NEED_OTP = {'code': 1001, 'message': 'otp verification is required'}
+OTP_VERIFY_ERROR = {'code': 1002, 'message': 'The OTP check fails. Procedure'}
+OTP_NEED_OPEN = {'code': 1003, 'message': 'Please enable otp'}
+OTP_OPEN = {'code': 1003, 'message': 'The otp is enabled. Procedure'}
+OTP_TIME_OUT = {'code': 1004, 'message': 'otp activation timed out'}
+
+# 登入相关
+NO_LOGIN = {'code': 10001, 'message': 'NoLogin'}
+PASSWORD_ERROR = {'code': 10002, 'message': 'Password Error'}  # 这里只能给user里面修改密码使用
+AUTH_ERROR = {'code': 10002, 'message': 'Account/Password Error'}
+
+# 通用
+DATA_NONE = {'code': 10101, 'message': 'Data equal to None'}
+NOT_FOUND = {'code': 10102, 'message': 'Data is not Found'}
+DATABASE_ERROR = {'code': 10103, 'message': 'Database operation error'}
+
+# 添加/修改时使用
+DOT_CHANGE_OWN_PASSWORD = {'code': 10201, 'message': 'Do not change your own password'}
+NO_ADMIN = {'code': 10202, 'message': 'There will be no administrator'}
+NO_GROUP = {'code': 10203, 'message': 'There is no permission group'}
+DUPLICATE = {'code': 10204, 'message': 'Duplicate content'}
+
+# 搜索
+NOT_SEARCH_KEY = {'code': 10301, 'message': 'No search terms'}
+
+# XLS导入相关
+NOT_XLS_FILE = {'code': 10401, 'message': 'This is not an xls/xlsx file'}
+XLS_NAME_ERROR = {'code': 10402, 'message': 'The xls/xlsx file table name is incorrect'}
+XLS_TITLE_ERROR = {'code': 10403, 'message': 'The xls/xlsx file table title name is incorrect'}
+XLS_IMPORT_EMPTY = {'coed': 10404, 'message': 'The import content is empty'}
