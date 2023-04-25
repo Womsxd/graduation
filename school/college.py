@@ -90,7 +90,7 @@ def query():
     cid = request.values.get("id")
     if cid is None:
         return jsonify(messages.DATA_NONE)
-    college = models.Subject.query.filter_by(id=cid).first()
+    college = models.College.query.filter_by(id=cid).first()
     if college is None:
         return jsonify(messages.DATA_NONE)
     returns = {"data": {"id": college.id, "name": college.name}}
