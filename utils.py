@@ -46,7 +46,7 @@ def load_xls_file(file: bytes, table_name: str):
         try:
             xsl = xlrd.open_workbook(file_contents=file)
             sheet = xsl.sheet_by_name(table_name)
-            result = [sheet.row_values(rowx) for rowx in range(sheet.nrows)]
+            return [sheet.row_values(rowx) for rowx in range(sheet.nrows)]
         except xlrd.biffh.XLRDError:  # 防止加载错误文件
             return None
         except ValueError:  # 处理表名错误
@@ -56,14 +56,13 @@ def load_xls_file(file: bytes, table_name: str):
         try:
             xls = openpyxl.load_workbook(filename=BytesIO(file), read_only=True, data_only=True)
             sheet = xls[table_name]
-            result = [list(row) for row in sheet.values]
+            return [list(row) for row in sheet.values]
         except openpyxl.utils.exceptions.InvalidFileException:
             return None
         except KeyError:  # 处理表名错误
             return []
     else:
         return None
-    return [i for i in result if "" not in i]  # 删除空数据
 
 
 def get_password(password):
