@@ -24,11 +24,8 @@ NO_ADMIN = {'code': 10202, 'message': 'There will be no administrator'}
 NO_GROUP = {'code': 10203, 'message': 'There is no permission group'}
 DUPLICATE = {'code': 10204, 'message': 'Duplicate content'}
 
-# 搜索
-NOT_SEARCH_KEY = {'code': 10301, 'message': 'No search terms'}
-
 # XLS导入相关
-NOT_XLS_FILE = {'code': 10401, 'message': 'This is not an xls/xlsx file'}
-XLS_NAME_ERROR = {'code': 10402, 'message': 'The xls/xlsx file table name is incorrect'}
-XLS_TITLE_ERROR = {'code': 10403, 'message': 'The xls/xlsx file table title name is incorrect'}
-XLS_IMPORT_EMPTY = {'coed': 10404, 'message': 'The import content is empty'}
+NOT_XLS_FILE = {'code': 10301, 'message': 'This is not an xls/xlsx file'}
+XLS_NAME_ERROR = {'code': 10302, 'message': 'The xls/xlsx file table name is incorrect'}
+XLS_TITLE_ERROR = {'code': 10303, 'message': 'The xls/xlsx file table title name is incorrect'}
+XLS_IMPORT_EMPTY = {'coed': 10304, 'message': 'The import content is empty'}
