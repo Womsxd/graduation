@@ -1,3 +1,4 @@
+import utils
 import messages
 from database import models, db
 from group import check_permissions
@@ -12,7 +13,6 @@ subject = Blueprint('subject', __name__)
 @login_required
 @check_permissions(1)
 def add():
-
     id_ = request.form.get('id')
     name = request.form.get('name')
     if not (id_ and name):
@@ -72,11 +72,57 @@ def delete():
 @subject.route('/subject/list', methods=['GET', 'POST'])
 @login_required
 @check_permissions(2)
-def slist():
+def get_list():
     page = request.values.get("page", 1, type=int)
-    pagination = models.Subject.query.paginate(page=page, per_page=20)
-    subjects = [{"id": i.id, "name": i.account} for i in pagination.items]
+    search = models.Subject.query
+    key = request.values.get("key")
+    if key is not None:
+        search = search.filter(models.Subject.name.like(f"%{key}%"))
+    pagination = search.paginate(page=page, per_page=20)
+    subjects = [{"id": i.id, "name": i.name} for i in pagination.items]
     data = {"subjects": subjects, "total": pagination.total, "current": page, "maximum": pagination.pages}
     returns = {"data": data}
     returns.update(messages.OK)
     return jsonify(returns)
+
+
+@subject.route('/subject/query', methods=['GET', 'POST'])
+@login_required
+@check_permissions(2)
+def query():
+    id_ = request.values.get("id")
+    if id_ is None:
+        return jsonify(messages.DATA_NONE)
+    subj = models.Subject.query.filter_by(id=id_).first()
+    if subj is None:
+        return jsonify(messages.DATA_NONE)
+    returns = {"data": {"id": subj.id, "name": subj.name}}
+    returns.update(messages.OK)
+    return jsonify(returns)
+
+
+@subject.route('/subject/import_xls', methods=['POST'])
+@login_required
+@check_permissions(1)
+def import_xls():
+    file = request.files.get('file')
+    if file is None:
+        return jsonify(messages.DATA_NONE)
+    result = utils.load_xls_file(file.read(), "科目")
+    if result is None:
+        return jsonify(messages.NOT_XLS_FILE)
+    if not result:
+        return jsonify(messages.XLS_NAME_ERROR)
+    if ["科目名称"] != result[0][:1]:
+        return jsonify(messages.XLS_TITLE_ERROR)
+    if len(result[1:]) == 0:
+        return jsonify(messages.XLS_IMPORT_EMPTY)
+    try:
+        with db.session.begin():
+            for i in result:
+                user = models.Subject(name=i[0])
+                db.session.add(user)
+        return jsonify(messages.OK)
+    except SQLAlchemyError:
+        db.session.rollback()
+        return jsonify(messages.DATABASE_ERROR)
