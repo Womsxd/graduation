@@ -219,7 +219,7 @@ def import_xls():
     file = request.files.get('file')
     if file is None:
         return jsonify(messages.DATA_NONE)
-    result = utils.load_xls_file(file.read(), "用户")
+    result = utils.load_xls_file(file.read(), "用户")  # [i for i in result if "" not in i]
     if result is None:
         return jsonify(messages.NOT_XLS_FILE)
     if not result:
@@ -234,15 +234,13 @@ def import_xls():
     try:
         with db.session.begin():
             for i in result:
-                group = None
-                for g in all_groups:
-                    if g.name.lower() == i[2].lower():
-                        group = g
-                        break
-                if not group:
-                    error += 1
-                    continue
-                user = models.User(account=i[0], password=utils.get_password(i[1]), group_id=group.id)
+                group_id = 3
+                if i[2] != "":
+                    for g in all_groups:
+                        if g.name.lower() == i[2].lower():
+                            group_id = g.id
+                            break
+                user = models.User(account=i[0], password=utils.get_password(i[1]), group_id=group_id)
                 ok += 1
                 db.session.add(user)
         returns = {"data": {"ok": ok, "error": error}}
