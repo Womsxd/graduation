@@ -198,6 +198,9 @@ def get_list():
     key = request.values.get("key")
     if key is not None:
         search = search.filter(models.User.account.like(f"%{key}%"))
+    group_id = request.values.get("group_id")
+    if group_id is not None:
+        search = search.filter(group_id=group_id)  # 都写死3个了，这里也直接写死的了
     pagination = search.paginate(page=page, per_page=20)
     users = [{"id": i.id, "account": i.account, "group": i.group_n} for i in pagination.items]
     data = {"users": users, "total": pagination.total, "current": page, "maximum": pagination.pages}
