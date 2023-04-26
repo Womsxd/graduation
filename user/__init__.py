@@ -171,16 +171,25 @@ def import_xls():
         return jsonify(messages.XLS_TITLE_ERROR)
     if len(result[1:]) == 0:
         return jsonify(messages.XLS_IMPORT_EMPTY)
-    error_users = []
+    repeat_users = []
+    error_lens = []
+    repeat_user_lens = []
     try:
         with db.session.begin(nested=True):
             group_cache = {}
             user_adds = []
             for i in result[1:]:
-                if "" in i[:2] or i[0] in [user.account for user in user_adds]:  # 账号密码为空直接忽略或者已经添加过了
+                if "" in i[:2]:  # 账号密码为空直接忽略或者已经添加过了
+                    error_lens.append(result.index(i) + 1)
                     continue
-                if i[0] in error_users or models.User.query.filter_by(account=i[0]).first() is None:
-                    error_users.append(i[0])
+                if i[0] in repeat_users or i[0] in [user.account for user in user_adds]:
+                    if i[0] not in repeat_users:
+                        repeat_users.append(i[0])
+                    error_lens.append(result.index(i) + 1)
+                    continue  # 重复添加
+                if models.User.query.filter_by(account=i[0]).first() is not None:
+                    repeat_users.append(i[0])
+                    error_lens.append(result.index(i) + 1)
                     continue
                 group_id = None
                 if i[2] != "":
@@ -191,8 +200,10 @@ def import_xls():
                         if group is not None:
                             group_id = group.id
                     group_cache[i[2]] = group_id
-                    user_adds.append(models.User(account=i[0], password=utils.get_password(i[1]), group_id=group_id))
-            returns = {"data": {"ok": len(user_adds), "error": len(error_users), "error_users": error_users}}
+                user_adds.append(models.User(account=i[0], password=utils.get_password(i[1]), group_id=group_id))
+            returns = {"data": {"ok": len(user_adds), "repeat": len(repeat_user_lens),
+                                "repeat_lens_users": repeat_user_lens, "error": len(error_lens),
+                                "error_lens": error_lens}}
             db.session.bulk_save_objects(user_adds)
         returns.update(messages.OK)
         return jsonify(returns)
