@@ -110,7 +110,8 @@ def get_list():
     if class_id is not None:
         querying = querying.filter_by(class_id=class_id)
     pagination = querying.paginate(page=page, per_page=20)
-    students = [{"id": i.id, "sid": i.sid, "name": i.name, "sex": utils.SexMap.to_string(i.sex),
+    to = utils.SexMap()
+    students = [{"id": i.id, "sid": i.sid, "name": i.name, "sex": to.to_string(i.sex),
                  "class": i.class_n} for i in pagination.items]
     data = {"students": students, "total": pagination.total, "current": page, "maximum": pagination.pages}
     returns = {"data": data}
@@ -130,7 +131,68 @@ def query():
         models.Clas.name.label('class_n')).filter_by(sid=sid).first()
     if stu is None:
         return jsonify(messages.DATA_NONE)
-    returns = {"data": {"id": stu.id, "sid": stu.sid, "name": stu.name, "sex": utils.SexMap.to_string(stu.sex),
+    to = utils.SexMap()
+    returns = {"data": {"id": stu.id, "sid": stu.sid, "name": stu.name, "sex": to.to_string(stu.sex),
                         "class": stu.class_n}}
     returns.update(messages.OK)
     return jsonify(returns)
+
+
+@student.route('/student/import_xls', methods=['POST'])
+@login_required
+@check_permissions(1)
+def import_xls():
+    file = request.files.get('file')
+    if file is None:
+        return jsonify(messages.DATA_NONE)
+    result = utils.load_xls_file(file.read(), "学生")
+    if result is None:
+        return jsonify(messages.NOT_XLS_FILE)
+    if not result:
+        return jsonify(messages.XLS_NAME_ERROR)
+    if ["学号", "姓名", "性别", "班级"] != result[0][:4]:
+        return jsonify(messages.XLS_TITLE_ERROR)
+    if len(result[1:]) == 0:
+        return jsonify(messages.XLS_IMPORT_EMPTY)
+    error_lens = []
+    error_students = []
+    try:
+        with db.session.begin(nested=True):
+            class_cache = {}
+            student_adds = []
+            for i in result[1:]:
+                if "" in i[:2]:
+                    error_lens.append(result.index(i)+1)
+                    continue
+                if i[0] in [stu.sid for stu in student_adds]:
+                    continue
+                if i[0] in error_students or models.User.query.filter_by(account=i[0]).first() is not None:
+                    if i[0] not in error_students:
+                        error_students.append(i[0])
+                    continue
+                class_id = None
+                if i[3] != "":
+                    if i[3] in class_cache.keys():
+                        class_id = class_cache[i[3]]
+                    else:
+                        class_ = models.Clas.query.filter_by(name=i[3]).first()
+                        if class_ is not None:
+                            class_id = class_.id
+                    class_cache[i[3]] = class_id
+                sex = None
+                if i[2] != "":
+                    if not utils.is_number(i[2]):
+                        to = utils.SexMap()
+                        sex = to.to_number(i[2])
+                    else:
+                        if i[2] in utils.SexMap.number_map.keys():
+                            sex = i[2]
+                student_adds.append(models.Student(sid=i[0], name=i[1], sex=sex,class_id=class_id))
+            returns = {"data": {"ok": len(student_adds), "error": len(error_lens)+len(error_students),
+                                "error_lens": error_lens,"error_students":error_students}}
+            db.session.bulk_save_objects(student_adds)
+        returns.update(messages.OK)
+        return jsonify(returns)
+    except SQLAlchemyError:
+        db.session.rollback()
+        return jsonify(messages.DATABASE_ERROR)
