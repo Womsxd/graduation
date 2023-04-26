@@ -104,7 +104,7 @@ def import_xls():
     file = request.files.get('file')
     if file is None:
         return jsonify(messages.DATA_NONE)
-    result = utils.load_xls_file(file.read(), "考试信息")
+    result = [i for i in utils.load_xls_file(file.read(), "考试信息") if i != ""]
     if result is None:
         return jsonify(messages.NOT_XLS_FILE)
     if not result:
