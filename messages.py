@@ -17,6 +17,7 @@ AUTH_ERROR = {'code': 10002, 'message': 'Account/Password Error'}
 DATA_NONE = {'code': 10101, 'message': 'Data equal to None'}
 NOT_FOUND = {'code': 10102, 'message': 'Data is not Found'}
 DATABASE_ERROR = {'code': 10103, 'message': 'Database operation error'}
+DOT_EXIST = {'code': 10104, 'message': "data does not exist"}
 
 # 添加/修改时使用
 DOT_CHANGE_OWN_PASSWORD = {'code': 10201, 'message': 'Do not change your own password'}
