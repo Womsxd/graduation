@@ -67,7 +67,7 @@ def delete():
 
 @exam.route('/exam/session/list', methods=['GET', 'POST'])
 @login_required
-@check_permissions(1)
+@check_permissions(2)
 def get_list():
     page = request.values.get("page", 1, type=int)
     querying = models.Examsession.query
