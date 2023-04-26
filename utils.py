@@ -9,15 +9,45 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 
 class SexMap:  # 简单，方便，拓展性强的快速性别映射工具类 支持美利坚现状((
-    gender_list = {1: "男", 2: "女"}
+    number_map = {1: "男", 2: "女"}
+    default_string = "男"
+    default_number = 1
 
-    @staticmethod
-    def to_string(sex_id: int) -> str:
-        return SexMap.gender_list.get(sex_id, "男")
+    def to_string(self, number: int) -> str:
+        return self.number_map.get(number, self.default_string)
 
-    @staticmethod
-    def to_number(sex: str) -> int:
-        return next((k for k, v in SexMap.gender_list.items() if v == sex), 1)
+    def to_number(self, string: str) -> int:
+        return int(next((k for k, v in self.number_map.items() if v == string), self.default_number))
+
+
+class ResultMap(SexMap):
+    def __init__(self):
+        super(ResultMap, self).__init__()
+        self.number_map = {-1: "缺考"}
+        self.default_string = "缺考"
+        self.default_number = -1
+
+
+def is_number(text) -> bool:
+    """
+    text是否为整数
+    """
+    try:
+        int(text)
+    except ValueError:
+        return False
+    return True
+
+
+def is_decimal(text) -> bool:
+    """
+    text是否为小数
+    """
+    try:
+        float(text)
+    except ValueError:
+        return False
+    return True
 
 
 def check_record_existence(model_class, id: int or None = None, sid: str or None = None):
@@ -28,7 +58,7 @@ def check_record_existence(model_class, id: int or None = None, sid: str or None
     return db.session.query(query.exists()).scalar()  # 存在返回True，不存在返回False
 
 
-def sha256(text):
+def sha256(text: str) -> str:
     sha = hashlib.sha256()
     sha.update(text.encode("utf-8"))
     return sha.hexdigest()
@@ -74,9 +104,9 @@ def load_xls_file(file: bytes, table_name: str):
         return None
 
 
-def get_password(password):
+def get_password(password: str) -> str:
     return generate_password_hash(password, "pbkdf2:sha512")
 
 
-def validate_password(save_password, password):
+def validate_password(save_password: str, password: str) -> bool:
     return check_password_hash(save_password, password)
