@@ -66,7 +66,7 @@ create table examinfo
     subject_id  INTEGER default 1 not null
         references subject
             on delete set default,
-    result      REAL    not null
+    result      REAL    default 0 not null
 );
 
 create table user

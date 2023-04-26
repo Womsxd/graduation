@@ -70,7 +70,7 @@ class Examinfo(db.Model):  # 考试成绩
                             nullable=False, server_default=text("1"))
     subject_id = db.Column(db.Integer, db.ForeignKey('subject.id', ondelete='SET DEFAULT'),
                            nullable=False, server_default=text("1"))
-    result = db.Column(db.Float, nullable=False)
+    result = db.Column(db.Float, nullable=False, server_default=text("0"))
 
     student = db.relationship('Student', backref=db.backref('examinfo', lazy=True))
     sessions = db.relationship('Examsession', backref=db.backref('examinfo', lazy=True))
