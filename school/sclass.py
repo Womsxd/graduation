@@ -153,7 +153,10 @@ def import_xls():
             college_cache = {}
             class_adds = []
             for i in result[1:]:
+                if [2] == "":  # 没有班级名称直接跳过了，没学院和年级还有默认兜底，没班级名字直接pass
+                    continue
                 college_id = None
+                grade = None
                 if i[0]:
                     if i[0] not in college_cache.keys():
                         college = models.College.query.filter_by(name=i[1]).first()
@@ -162,7 +165,9 @@ def import_xls():
                         college_cache[i[0]] = college_id
                     else:
                         college_id = college_cache[i[0]]
-                class_adds.append(models.Clas(name=i[2], collede_id=college_id, grade=i[1]))
+                if i[1]:
+                    grade = i = [1]
+                class_adds.append(models.Clas(name=i[2], collede_id=college_id, grade=grade))
             db.session.bulk_save_objects(class_adds)
         return jsonify(messages.OK)
     except SQLAlchemyError:
