@@ -17,8 +17,8 @@ def add():
         return jsonify(messages.DATA_NONE)
     college = models.College(name=name)
     try:
-        with db.session.begin(nested=True):
-            db.session.add(college)
+        db.session.add(college)
+        db.session.commit()
         return jsonify(messages.OK)
     except SQLAlchemyError:
         db.session.rollback()

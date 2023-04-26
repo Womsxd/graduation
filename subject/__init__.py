@@ -18,8 +18,8 @@ def add():
         return jsonify(messages.DATA_NONE)
     subj = models.Subject(name=name)
     try:
-        with db.session.begin(nested=True):
-            db.session.add(subj)
+        db.session.add(subj)
+        db.session.commit()
         return jsonify(messages.OK)
     except SQLAlchemyError:
         db.session.rollback()

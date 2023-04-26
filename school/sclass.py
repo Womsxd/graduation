@@ -15,16 +15,15 @@ def add():
     name = request.form.get('name')
     if name is None:
         return jsonify(messages.DATA_NONE)
-    class_ = models.Clas(name=name)
     college = request.form.get('college')
-    if college is None:
-        class_.college_id = college
     grade = request.form.get("grade")
-    if grade is None:
-        class_.grade = grade
+    if college is not None:
+        if models.College.query.filter_by(id=college).first() is None:
+            college = None
+    class_ = models.Clas(name=name, college_id=college, grade=grade)
     try:
-        with db.session.begin(nested=True):
-            db.session.add(class_)
+        db.session.add(class_)
+        db.session.commit()
         return jsonify(messages.OK)
     except SQLAlchemyError:
         db.session.rollback()
@@ -166,7 +165,7 @@ def import_xls():
                     else:
                         college_id = college_cache[i[0]]
                 if i[1]:
-                    grade = i = [1]
+                    grade = i[1]
                 class_adds.append(models.Clas(name=i[2], collede_id=college_id, grade=grade))
             db.session.bulk_save_objects(class_adds)
         return jsonify(messages.OK)

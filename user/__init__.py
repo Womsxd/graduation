@@ -42,8 +42,7 @@ def add():
     if models.User.query.filter_by(account=username).first() is not None:
         returns = messages.OK.copy()
         returns["message"] = f'Account is {returns["message"]}'
-
-        return jsonify()
+        return jsonify(returns)
     user = models.User(account=username, password=utils.get_password(password))
     group_id = request.form.get('group_id')
     if group_id:
@@ -51,8 +50,8 @@ def add():
             return jsonify(messages.NO_GROUP)
         user.group_id = int(group_id)
     try:
-        with db.session.begin(nested=True):
-            db.session.add(user)
+        db.session.add(user)
+        db.session.commit()
         return jsonify(messages.OK)
     except SQLAlchemyError:
         db.session.rollback()

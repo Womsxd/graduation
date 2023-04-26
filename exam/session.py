@@ -17,8 +17,8 @@ def add():
         return jsonify(messages.DATA_NONE)
     esession = models.Examsession(name=name)
     try:
-        with db.session.begin(nested=True):
-            db.session.add(esession)
+        db.session.add(esession)
+        db.session.commit()
         return jsonify(messages.OK)
     except SQLAlchemyError:
         db.session.rollback()

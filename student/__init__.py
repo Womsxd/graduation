@@ -15,18 +15,14 @@ student = Blueprint('student', __name__)
 def add():
     sid = request.form.get('sid')
     name = request.form.get('name')
-    sex = request.form.get('sex')
     class_ = request.form.get('class')
-    if not (sid and name and sex and class_):
+    if not (sid and name and class_):
         return jsonify(messages.DATA_NONE)
-    stu = models.Student()
-    stu.sid = sid
-    stu.name = name
-    stu.sex = sex
-    stu.class_ = class_
+    sex = request.form.get('sex')
+    stu = models.Student(sid=sid, name=name, sex=sex, class_=class_)
     try:
-        with db.session.begin(nested=True):
-            db.session.add(stu)
+        db.session.add(stu)
+        db.session.commit()
         return jsonify(messages.OK)
     except SQLAlchemyError:
         db.session.rollback()
