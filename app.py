@@ -19,7 +19,7 @@ class FlaskConfig(object):
     DEBUG = True
     SECRET_KEY = config['cookie']['secret']
     REMEMBER_COOKIE_DURATION = 2592000000  # 设置Cookie最长有效期一个月
-    MAX_CONTENT_LENGTH = 16 * 1000 * 1000 # 限制最大上传大小为16M
+    MAX_CONTENT_LENGTH = 16 * 1000 * 1000  # 限制最大上传大小为16M
     db = config["database"]
     if db["type"] == "sqlite":
         db_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), f'./{db["sqlite_file"]}')
@@ -40,7 +40,6 @@ app.register_blueprint(user_blueprint)
 app.register_blueprint(school_blueprint)
 app.register_blueprint(student_blueprint)
 app.register_blueprint(subject_blueprint)
-
 
 if __name__ == '__main__':
     server = pywsgi.WSGIServer((config['base']['host'], int(config['base']['port'])), app)
