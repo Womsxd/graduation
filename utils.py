@@ -4,6 +4,7 @@ import qrcode
 import hashlib
 import openpyxl
 from io import BytesIO
+from database import db
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
@@ -17,6 +18,14 @@ class SexMap:  # 简单，方便，拓展性强的快速性别映射工具类 �
     @staticmethod
     def to_number(sex: str) -> int:
         return next((k for k, v in SexMap.gender_list.items() if v == sex), 1)
+
+
+def check_record_existence(model_class, id: int or None = None, sid: str or None = None):
+    if sid is not None:
+        query = db.session.query(model_class).filter_by(sid=id)
+    else:
+        query = db.session.query(model_class).filter_by(id=id)
+    return db.session.query(query.exists()).scalar()  # 存在返回True，不存在返回False
 
 
 def sha256(text):
