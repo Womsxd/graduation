@@ -22,8 +22,7 @@ DOT_EXIST = {'code': 10104, 'message': "data does not exist"}
 # 添加/修改时使用
 DOT_CHANGE_OWN_PASSWORD = {'code': 10201, 'message': 'Do not change your own password'}
 NO_ADMIN = {'code': 10202, 'message': 'There will be no administrator'}
-NO_GROUP = {'code': 10203, 'message': 'There is no permission group'}
-DUPLICATE = {'code': 10204, 'message': 'Duplicate content'}
+DUPLICATE = {'code': 10203, 'message': 'Duplicate content'}
 
 # XLS导入相关
 NOT_XLS_FILE = {'code': 10301, 'message': 'This is not an xls/xlsx file'}
