@@ -12,11 +12,10 @@ from sqlalchemy.exc import SQLAlchemyError
 @login_required
 @check_permissions(1)
 def add():
-    id_ = request.form.get('id')
     name = request.form.get('name')
-    if not (id_ and name):
+    if name is None:
         return jsonify(messages.DATA_NONE)
-    esession = models.Examsession(id=id_, name=name)
+    esession = models.Examsession(name=name)
     try:
         with db.session.begin(nested=True):
             db.session.add(esession)

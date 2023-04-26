@@ -159,7 +159,7 @@ def import_xls():
     file = request.files.get('file')
     if file is None:
         return jsonify(messages.DATA_NONE)
-    result = utils.load_xls_file(file.read(), "用户")  # [i for i in result if "" not in i]
+    result = utils.load_xls_file(file.read(), "用户")
     if result is None:
         return jsonify(messages.NOT_XLS_FILE)
     if not result:
@@ -174,6 +174,8 @@ def import_xls():
         with db.session.begin(nested=True):
             group_cache = {}
             for i in result[1:]:
+                if "" in i[:2]:  # 账号密码为空直接忽略
+                    continue
                 if i[0] in error_users or models.User.query.filter_by(account=i[0]).first() is None:
                     error_users.append(i[0])
                     error += 1

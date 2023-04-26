@@ -12,11 +12,10 @@ from sqlalchemy.exc import SQLAlchemyError
 @login_required
 @check_permissions(1)
 def add():
-    cid = request.form.get('id')
     name = request.form.get('name')
-    if not (cid and name):
+    if name is None:
         return jsonify(messages.DATA_NONE)
-    college = models.College(id=cid, name=name)
+    college = models.College(name=name)
     try:
         with db.session.begin(nested=True):
             db.session.add(college)
