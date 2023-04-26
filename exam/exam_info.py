@@ -164,7 +164,7 @@ def import_xls():
         return jsonify(messages.NOT_XLS_FILE)
     if not result:
         return jsonify(messages.XLS_NAME_ERROR)
-    if ["考试信息", "学号", "姓名", "科目", "成绩"] != result[0][:3]:
+    if ["考试信息", "学号", "姓名", "科目", "成绩"] != result[0][:5]:
         return jsonify(messages.XLS_TITLE_ERROR)
     if len(result[1:]) == 0:
         return jsonify(messages.XLS_IMPORT_EMPTY)
