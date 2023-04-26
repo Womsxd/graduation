@@ -46,9 +46,11 @@ def add():
     user = models.User(account=username, password=utils.get_password(password))
     group_id = request.form.get('group_id')
     if group_id:
-        if models.Group.query.filter_by(id=group_id).first() is None:
-            return jsonify(messages.NO_GROUP)
-        user.group_id = int(group_id)
+        if not utils.check_record_existence(models.Group, group_id):
+            returns = messages.DOT_EXIST.copy()
+            returns['message'] = f"group_id {returns['message']}"
+            return jsonify(returns)
+        user.group_id = group_id
     try:
         db.session.add(user)
         db.session.commit()
@@ -77,8 +79,10 @@ def edit():
         user.csrf = None
     if group_id is not None:
         if user.groupid != group_id:
-            if models.Group.query.filter_by(id=group_id).first() is None:
-                return jsonify(messages.NO_GROUP)
+            if not utils.check_record_existence(models.Group, group_id):
+                returns = messages.DOT_EXIST.copy()
+                returns['message'] = f"group_id {returns['message']}"
+                return jsonify(returns)
             if user.groupid == 1 and models.User.query.filter(models.User.groupid == 1).count() <= 1:
                 return jsonify(messages.NO_ADMIN)  # 防止可用用户中全都没有管理员权限
             user.group_id = group_id

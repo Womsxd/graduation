@@ -16,9 +16,17 @@ def add():
     sid = request.form.get('sid')
     name = request.form.get('name')
     class_ = request.form.get('class')
-    if not (sid and name and class_):
+    if not (sid and name):
         return jsonify(messages.DATA_NONE)
     sex = request.form.get('sex')
+    if not sex in utils.SexMap.number_map.keys():
+        returns = messages.DOT_EXIST.copy()
+        returns['message'] = f"sex {returns['message']}"
+        return jsonify(returns)
+    if not utils.check_record_existence(models.Clas, class_):
+        returns = messages.DOT_EXIST.copy()
+        returns['message'] = f"class {returns['message']}"
+        return jsonify(returns)
     stu = models.Student(sid=sid, name=name, sex=sex, class_=class_)
     try:
         db.session.add(stu)
@@ -48,9 +56,15 @@ def edit():
     if name is not None:
         stu.name = name
     if sex is not None:
-        stu.sex = sex
+        if not sex in utils.SexMap.number_map.keys():
+            returns = messages.DOT_EXIST.copy()
+            returns['message'] = f"sex {returns['message']}"
+            return jsonify(returns)
     if stu.class_ is not None:
-        stu.class_ = class_
+        if not utils.check_record_existence(models.Clas, class_):
+            returns = messages.DOT_EXIST.copy()
+            returns['message'] = f"class {returns['message']}"
+            return jsonify(returns)
     try:
         db.session.commit()
         return jsonify(messages.OK)

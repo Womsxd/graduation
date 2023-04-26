@@ -18,8 +18,10 @@ def add():
     college = request.form.get('college')
     grade = request.form.get("grade")
     if college is not None:
-        if models.College.query.filter_by(id=college).first() is None:
-            college = None
+        if not utils.check_record_existence(models.College, college):
+            returns = messages.DOT_EXIST.copy()
+            returns['message'] = f"college {returns['message']}"
+            return jsonify(returns)
     class_ = models.Clas(name=name, college_id=college, grade=grade)
     try:
         db.session.add(class_)
@@ -45,7 +47,10 @@ def edit():
         class_.name = name
     college = request.form.get('college')
     if college is not None:
-        class_.college = college
+        if not utils.check_record_existence(models.College, college):
+            returns = messages.DOT_EXIST.copy()
+            returns['message'] = f"college {returns['message']}"
+            return jsonify(returns)
     grade = request.form.get("grade")
     if grade is None:
         class_.grade = grade
