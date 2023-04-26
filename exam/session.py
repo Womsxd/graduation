@@ -115,9 +115,10 @@ def import_xls():
         return jsonify(messages.XLS_IMPORT_EMPTY)
     try:
         with db.session.begin(nested=True):
+            session_adds = []
             for i in result[1:]:
-                esession = models.Examsession(name=i[0])
-                db.session.add(esession)
+                session_adds.append(models.Examsession(name=i[0]))
+            db.session.bulk_save_objects(session_adds)
         return jsonify(messages.OK)
     except SQLAlchemyError:
         db.session.rollback()

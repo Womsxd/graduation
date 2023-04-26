@@ -168,31 +168,29 @@ def import_xls():
         return jsonify(messages.XLS_TITLE_ERROR)
     if len(result[1:]) == 0:
         return jsonify(messages.XLS_IMPORT_EMPTY)
-    ok, error = 0, 0
     error_users = []
     try:
         with db.session.begin(nested=True):
             group_cache = {}
+            user_adds = []
             for i in result[1:]:
-                if "" in i[:2]:  # 账号密码为空直接忽略
+                if "" in i[:2] or i[0] in [user.account for user in user_adds]:  # 账号密码为空直接忽略或者已经添加过了
                     continue
                 if i[0] in error_users or models.User.query.filter_by(account=i[0]).first() is None:
                     error_users.append(i[0])
-                    error += 1
                     continue
-                group_id = 3
+                group_id = None
                 if i[2] != "":
                     if i[2] in group_cache.keys():
-                        group_id = group_cache
+                        group_id = group_cache[i[2]]
                     else:
                         group = models.Group.query.filter_by(name=i[2]).first()
                         if group is not None:
                             group_id = group.id
                     group_cache[i[2]] = group_id
-                user = models.User(account=i[0], password=utils.get_password(i[1]), group_id=group_id)
-                ok += 1
-                db.session.add(user)
-        returns = {"data": {"ok": ok, "error": error, "error_users": error_users}}
+                    user_adds.append(models.User(account=i[0], password=utils.get_password(i[1]), group_id=group_id))
+            returns = {"data": {"ok": len(user_adds), "error": len(error_users), "error_users": error_users}}
+            db.session.bulk_save_objects(user_adds)
         returns.update(messages.OK)
         return jsonify(returns)
     except SQLAlchemyError:
