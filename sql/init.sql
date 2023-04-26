@@ -12,7 +12,8 @@ create table class
     name       TEXT    not null,
     college_id INTEGER default 1 not null
         references college
-            on delete set default
+            on delete set default,
+    grade      INTEGER default 0 not null
 );
 
 create table examsessions
