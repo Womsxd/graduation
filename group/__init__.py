@@ -1,16 +1,18 @@
 import functools
 from database import models
 from flask import abort, session
+from flask_login import current_user
 
 
-def check_permissions(group_id):
+def check_permissions(permissions_node):
     def check(func):
         @functools.wraps(func)
         def inner(*args, **kwargs):
-            gid = models.User.query.filter_by(id=session["_uid"]).first().group_id
-            need_group = models.Group.query.filter_by(id=gid).first()
-            if group_check(need_group, group_id):
-                return func(*args, **kwargs)
+            user = models.User.query.filter_by(id=session["_uid"]).first()
+            if user is not None and current_user.get_id() == user.csrf:
+                user_group = models.Group.query.filter_by(id=user.group_id).first()
+                if permission_check(permissions_node, user_group):
+                    return func(*args, **kwargs)
             return abort(404)
 
         return inner
@@ -18,9 +20,35 @@ def check_permissions(group_id):
     return check
 
 
-def group_check(group: models.Group, need_id: int) -> bool:
-    while group is not None:
-        if group.id == need_id or group.inherit == need_id:
+def permission_check(need_permission: str, have_permission: models.Group):
+    if have_permission is None:
+        return False
+    if have_permission.permissions is not None and have_permission.permissions != "":
+        permission = have_permission.permissions.split(",")
+        if "*" in permission:  # 当用户有*权限的时候直接允许
             return True
-        group = models.Group.query.filter_by(id=group.inherit).first()
+        nodes = need_permission.split(".")
+        prefix = ""
+        if len(nodes) == 1:
+            return nodes
+        for index, node in enumerate(nodes):
+            if not prefix:
+                if f'{node}.*' in permission:
+                    return True
+                prefix = f'{node}'
+            elif index == len(nodes) - 1:
+                if f'{prefix}.{node}' in permission:
+                    return True
+            else:
+                prefix = f'{prefix}.{node}'
+                if f'{prefix}.*' in permission:
+                    return True
+    if have_permission.inherit is not None and have_permission.inherit != "":
+        inherit = have_permission.inherit.split(",")
+        for i in inherit:
+            have = models.Group.query.filter_by(id=i).firsr()
+            if have is None:
+                continue
+            if permission_check(need_permission, have):
+                return True
     return False
