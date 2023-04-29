@@ -11,7 +11,7 @@ subject = Blueprint('subject', __name__)
 
 @subject.route('/subject/add', methods=['POST'])
 @login_required
-@check_permissions(1)
+@check_permissions("subject.add")
 def add():
     name = request.form.get('name')
     if name is None:
@@ -28,7 +28,7 @@ def add():
 
 @subject.route('/subject/edit', methods=['POST'])
 @login_required
-@check_permissions(2)
+@check_permissions("subject.edit")
 def edit():
     id_ = request.form.get('id')
     name = request.form.get('name')
@@ -49,7 +49,7 @@ def edit():
 
 @subject.route('/subject/delete', methods=['POST'])
 @login_required
-@check_permissions(1)
+@check_permissions("subject.delete")
 def delete():
     id_ = request.form.get('id')
     if id_ is None:
@@ -68,7 +68,7 @@ def delete():
 
 @subject.route('/subject/list', methods=['GET', 'POST'])
 @login_required
-@check_permissions(2)
+@check_permissions("subject.list")
 def get_list():
     page = request.values.get("page", 1, type=int)
     querying = models.Subject.query
@@ -85,7 +85,7 @@ def get_list():
 
 @subject.route('/subject/query', methods=['GET', 'POST'])
 @login_required
-@check_permissions(2)
+@check_permissions("subject.query")
 def query():
     id_ = request.values.get("id")
     if id_ is None:
@@ -100,7 +100,7 @@ def query():
 
 @subject.route('/subject/import_xls', methods=['POST'])
 @login_required
-@check_permissions(1)
+@check_permissions("subject.import_xls")
 def import_xls():
     file = request.files.get('file')
     if file is None:

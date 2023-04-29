@@ -11,7 +11,7 @@ student = Blueprint('student', __name__)
 
 @student.route('/student/add', methods=['POST'])
 @login_required
-@check_permissions(1)
+@check_permissions("student.add")
 def add():
     sid = request.form.get('sid')
     name = request.form.get('name')
@@ -39,7 +39,7 @@ def add():
 
 @student.route('/student/edit', methods=['POST'])
 @login_required
-@check_permissions(2)
+@check_permissions("student.edit")
 def edit():
     id_ = request.form.get('id')
     if id_ is None:
@@ -75,7 +75,7 @@ def edit():
 
 @student.route('/student/delete', methods=['POST'])
 @login_required
-@check_permissions(1)
+@check_permissions("student.delete")
 def delete():
     sid = request.form.get('sid')
     if sid is None:
@@ -94,7 +94,7 @@ def delete():
 
 @student.route('/student/list', methods=['GET', 'POST'])
 @login_required
-@check_permissions(2)
+@check_permissions("student.list")
 def get_list():
     page = request.values.get("page", 1, type=int)
     querying = models.Student.query.join(models.Clas).join(models.College).with_entities(
@@ -121,7 +121,7 @@ def get_list():
 
 @student.route('/student/query', methods=['POST'])
 @login_required
-@check_permissions(2)
+@check_permissions("student.query")
 def query():
     sid = request.form.get("sid")
     if sid is None:
@@ -140,7 +140,7 @@ def query():
 
 @student.route('/student/import_xls', methods=['POST'])
 @login_required
-@check_permissions(1)
+@check_permissions("student.import_xls")
 def import_xls():
     file = request.files.get('file')
     if file is None:

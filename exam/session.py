@@ -10,7 +10,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 @exam.route('/exam/session/add', methods=['POST'])
 @login_required
-@check_permissions(1)
+@check_permissions("exam.session.add")
 def add():
     name = request.form.get('name')
     if name is None:
@@ -27,7 +27,7 @@ def add():
 
 @exam.route('/exam/session/edit', methods=['POST'])
 @login_required
-@check_permissions(1)
+@check_permissions("exam.session.edit")
 def edit():
     id = request.form.get('id')
     if id is None:
@@ -48,7 +48,7 @@ def edit():
 
 @exam.route('/exam/session/delete', methods=['POST'])
 @login_required
-@check_permissions(1)
+@check_permissions("exam.session.delete")
 def delete():
     id = request.form.get('id')
     if id is None:
@@ -67,7 +67,7 @@ def delete():
 
 @exam.route('/exam/session/list', methods=['GET', 'POST'])
 @login_required
-@check_permissions(2)
+@check_permissions("exam.session.list")
 def get_list():
     page = request.values.get("page", 1, type=int)
     querying = models.Examsession.query
@@ -84,7 +84,7 @@ def get_list():
 
 @exam.route('/exam/session/query', methods=['GET', 'POST'])
 @login_required
-@check_permissions(2)
+@check_permissions("exam.session.query")
 def query():
     id_ = request.values.get("id")
     if id_ is None:
@@ -99,7 +99,7 @@ def query():
 
 @exam.route('/exam/session/import_xls', methods=['POST'])
 @login_required
-@check_permissions(1)
+@check_permissions("exam.session.import_xls")
 def import_xls():
     file = request.files.get('file')
     if file is None:

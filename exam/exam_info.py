@@ -11,7 +11,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 @exam.route('/exam/info/add', methods=['POST'])
 @login_required
-@check_permissions(2)
+@check_permissions("exam.info.add")
 def add():
     sid = request.form.get("sid")
     session_id = request.form.get("session_id")
@@ -39,7 +39,7 @@ def add():
 
 @exam.route('/exam/info/edit', methods=['POST'])
 @login_required
-@check_permissions(2)
+@check_permissions("exam.info.edit")
 def edit():
     id = request.form.get('id')
     if id is None:
@@ -75,7 +75,7 @@ def edit():
 
 @exam.route('/exam/info/delete', methods=['POST'])
 @login_required
-@check_permissions(2)
+@check_permissions("exam.info.delete")
 def delete():
     id = request.form.get('id')
     if id is None:
@@ -94,7 +94,7 @@ def delete():
 
 @exam.route('/exam/info/list', methods=['GET', 'POST'])
 @login_required
-@check_permissions(2)
+@check_permissions("exam.info.list")
 def get_list():
     page = request.values.get("page", 1, type=int)
     querying = models.Examinfo.query.options(
@@ -132,7 +132,7 @@ def get_list():
 
 @exam.route('/exam/info/query', methods=['GET', 'POST'])
 @login_required
-@check_permissions(2)
+@check_permissions("exam.info.query")
 def query():
     id_ = request.values.get("id")
     if id_ is None:
@@ -154,7 +154,7 @@ def query():
 
 @exam.route('/exam/info/import_xls', methods=['POST'])
 @login_required
-@check_permissions(2)
+@check_permissions("exam.info.import_xls")
 def import_xls():
     file = request.files.get('file')
     if file is None:

@@ -10,7 +10,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 @school.route('/school/class/add', methods=['POST'])
 @login_required
-@check_permissions(1)
+@check_permissions("school.class.add")
 def add():
     name = request.form.get('name')
     if name is None:
@@ -34,7 +34,7 @@ def add():
 
 @school.route('/school/class/edit', methods=['POST'])
 @login_required
-@check_permissions(1)
+@check_permissions("school.class.edit")
 def edit():
     cid = request.form.get('id')
     if cid is None:
@@ -64,7 +64,7 @@ def edit():
 
 @school.route('/school/class/delete', methods=['POST'])
 @login_required
-@check_permissions(1)
+@check_permissions("school.class.delete")
 def delete():
     cid = request.form.get('id')
     if cid is None:
@@ -83,7 +83,7 @@ def delete():
 
 @school.route('/school/class/grades', methods=['GET', 'POST'])
 @login_required
-@check_permissions(1)
+@check_permissions("school.class.grades")
 def get_grades():
     page = request.values.get("page", 1, type=int)
     pagination = db.session.query(models.Clas.grade).distinct().paginate(page=page, per_page=20)
@@ -95,7 +95,7 @@ def get_grades():
 
 @school.route('/school/class/list', methods=['GET', 'POST'])
 @login_required
-@check_permissions(1)
+@check_permissions("school.class.list")
 def get_list():
     page = request.values.get("page", 1, type=int)
     querying = models.Student.query.join(models.Clas).with_entities(
@@ -121,7 +121,7 @@ def get_list():
 
 @school.route('/school/class/query', methods=['GET', 'POST'])
 @login_required
-@check_permissions(2)
+@check_permissions("school.class.query")
 def query():
     cid = request.values.get("id")
     if cid is None:
@@ -138,7 +138,7 @@ def query():
 
 @school.route('/school/class/import_xls', methods=['POST'])
 @login_required
-@check_permissions(1)
+@check_permissions("school.class.import_xls")
 def import_xls():
     file = request.files.get('file')
     if file is None:
