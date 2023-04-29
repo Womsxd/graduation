@@ -20,35 +20,31 @@ def check_permissions(permissions_node: str):
     return check
 
 
-def permission_check(need_permission: str, have_permission: models.Group) -> bool:
-    if have_permission is None:
+def permission_check(need_permission: str, user_permission: models.Group) -> bool:
+    if user_permission is None:
         return False
-    if have_permission.permissions is not None and have_permission.permissions != "":
-        permission = have_permission.permissions.split(",")
+    if user_permission.permissions:
+        permission = user_permission.permissions.split(",")
         if "*" in permission:  # 当用户有*权限的时候直接允许
             return True
-        nodes = need_permission.split(".")
-        prefix = ""
-        for index, node in enumerate(nodes):
-            if len(nodes) == 1 and node in have_permission:
-                return True
-            if not prefix:
+        if need_permission in permission:  # 直接判断是否在权限组里面，是的话直接返回true
+            return True
+        nodes = need_permission.split(".")  # 根据.做切割
+        node_prefix = ""
+        for index, node in enumerate(nodes[:-1]):
+            if not node_prefix:
                 if f'{node}.*' in permission:
                     return True
-                prefix = f'{node}'
-            elif index == len(nodes) - 1:
-                if f'{prefix}.{node}' in permission:
-                    return True
+                node_prefix = node
             else:
-                prefix = f'{prefix}.{node}'
-                if f'{prefix}.*' in permission:
+                node_prefix = f'{node_prefix}.{node}'
+                if f'{node_prefix}.*' in permission:
                     return True
-    if have_permission.inherit is not None and have_permission.inherit != "":
-        inherit = have_permission.inherit.split(",")
-        for i in inherit:
-            have = models.Group.query.filter_by(id=i).firsr()
-            if have is None:
+    if user_permission.inherit:
+        for i in user_permission.inherit.split(","):
+            next_group = models.Group.query.filter_by(id=i).firsr()
+            if next_group is None:
                 continue
-            if permission_check(need_permission, have):
+            if permission_check(need_permission, next_group):
                 return True
     return False
