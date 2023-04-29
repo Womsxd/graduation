@@ -69,7 +69,7 @@ create table examinfo
     result      REAL    default 0 not null
 );
 
-create table user
+create table users
 (
     id       INTEGER not null
         primary key autoincrement,
@@ -80,15 +80,16 @@ create table user
     csrf     TEXT,
     otp_status       INT     default 0,
     otp_secret         TEXT,
-    otp_act_exp_time INTEGER
+    otp_act_exp_time INTEGER,
+    banned INT default 0 not null
 
 );
 
-create unique index user_account_uindex
-    on user (account);
+create unique index users_account_uindex
+    on users (account);
 
-create unique index user_csrf_uindex
-    on user (csrf);
+create unique index users_csrf_uindex
+    on users (csrf);
 
-create unique index user_otp_secret_uindex
-    on user (otp_secret);
+create unique index users_otp_secret_uindex
+    on users (otp_secret);

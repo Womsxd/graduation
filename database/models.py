@@ -90,7 +90,7 @@ class Group(db.Model):  # 权限组
 
 
 class User(db.Model):  # 用户组
-    __tablename__ = 'user'
+    __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     account = db.Column(db.Text(20), nullable=False, unique=True)
@@ -100,6 +100,7 @@ class User(db.Model):  # 用户组
     otp_status = db.Column(db.Integer, server_default=text("0"))
     otp_secret = db.Column(db.Text, unique=True)
     otp_act_exp_time = db.Column(db.Integer)
+    banned = db.Column(db.Integer, server_default=text("0"), nullable=False, )
 
     group = db.relationship('Group', backref=db.backref('user', lazy=True))
 
