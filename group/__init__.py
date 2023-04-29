@@ -4,7 +4,7 @@ from flask import abort, session
 from flask_login import current_user
 
 
-def check_permissions(permissions_node):
+def check_permissions(permissions_node: str):
     def check(func):
         @functools.wraps(func)
         def inner(*args, **kwargs):
@@ -20,7 +20,7 @@ def check_permissions(permissions_node):
     return check
 
 
-def permission_check(need_permission: str, have_permission: models.Group):
+def permission_check(need_permission: str, have_permission: models.Group) -> bool:
     if have_permission is None:
         return False
     if have_permission.permissions is not None and have_permission.permissions != "":
