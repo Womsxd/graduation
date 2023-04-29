@@ -25,10 +25,11 @@ create table examsessions
 
 create table groups
 (
-    id      INTEGER not null
+    id          INTEGER not null
         primary key autoincrement,
-    name    TEXT    not null,
-    inherit INTEGER
+    name        TEXT    not null,
+    permissions TEXT,
+    inherit     TEXT
 );
 
 create table student

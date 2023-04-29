@@ -86,7 +86,8 @@ class Group(db.Model):  # 权限组
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.Text(20), nullable=False)
-    inherit = db.Column(db.Integer)
+    permissions = db.Column(db.Text)
+    inherit = db.Column(db.Text)
 
 
 class User(db.Model):  # 用户组
