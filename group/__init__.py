@@ -29,9 +29,9 @@ def permission_check(need_permission: str, have_permission: models.Group):
             return True
         nodes = need_permission.split(".")
         prefix = ""
-        if len(nodes) == 1:
-            return nodes
         for index, node in enumerate(nodes):
+            if len(nodes) == 1 and node in have_permission:
+                return True
             if not prefix:
                 if f'{node}.*' in permission:
                     return True
