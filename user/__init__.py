@@ -92,6 +92,13 @@ def edit():
             user.otp_status = 0
             user.otp_secret = None
             user.otp_act_exp_time = None
+    set_banned = request.form.get('set_banned')
+    if set_banned is not None:
+        if set_banned == 1:
+            user.banned = 1
+            user.csrf = None  # 清除被ban用户的csrf
+        else:
+            user.banned = 0  # 不等于1的时候unban
     try:
         db.session.commit()
         return jsonify(messages.OK)

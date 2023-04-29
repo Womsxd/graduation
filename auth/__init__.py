@@ -20,6 +20,11 @@ class User(UserMixin, models.User):
     def get_id(self):
         return str(self.csrf)
 
+    def is_banned(self):
+        if self.banned == 1:
+            return True
+        return False
+
     def set_password(self, password):
         self.password = utils.get_password(password)
 
@@ -53,6 +58,8 @@ def login():
             return jsonify(messages.NEED_OTP)
         if not pyotp.TOTP(user.otp_secret).verify(otp_code):  # 检测双因数认识是否成功
             return jsonify(messages.OTP_VERIFY_ERROR)
+    if user.is_banned():
+        return jsonify(messages.ACCOUNT_BANNED)
     session.permanent = True
     user.csrf = utils.sha256(f'{user.id}-{time.time()}-{user.password}')
     # 登入后刷新csrf 让旧的失效 采用用户数字id+时间戳+密码进行哈希生成 防止重复

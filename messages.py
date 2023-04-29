@@ -12,6 +12,7 @@ OTP_TIME_OUT = {'code': 1004, 'message': 'otp activation timed out'}
 NO_LOGIN = {'code': 10001, 'message': 'NoLogin'}
 PASSWORD_ERROR = {'code': 10002, 'message': 'Password Error'}  # 这里只能给user里面修改密码使用
 AUTH_ERROR = {'code': 10002, 'message': 'Account/Password Error'}
+ACCOUNT_BANNED = {'code': 10003, 'message': "Account is Banned"}
 
 # 通用
 DATA_NONE = {'code': 10101, 'message': 'Data equal to None'}
