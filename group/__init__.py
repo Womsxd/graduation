@@ -3,8 +3,6 @@ from database import models
 from flask import abort, session
 from flask_login import current_user
 
-permissions = set()
-
 
 def check_permissions(permission: str):
     def check(func):
@@ -18,8 +16,6 @@ def check_permissions(permission: str):
                 if permission_check(permission, user_group):
                     return func(*args, **kwargs)
             return abort(404)
-
-        permissions.add(permission)
         return inner
 
     return check
