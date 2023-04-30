@@ -12,7 +12,7 @@ from sqlalchemy.exc import SQLAlchemyError
 @exam.route('/exam/info/add', methods=['POST'])
 @login_required
 @check_permissions("exam.info.add")
-def add():
+def info_add():
     sid = request.form.get("sid")
     session_id = request.form.get("session_id")
     subject_id = request.form.get("subject_id")
@@ -40,7 +40,7 @@ def add():
 @exam.route('/exam/info/edit', methods=['POST'])
 @login_required
 @check_permissions("exam.info.edit")
-def edit():
+def info_edit():
     id = request.form.get('id')
     if id is None:
         return jsonify(messages.DATA_NONE)
@@ -76,7 +76,7 @@ def edit():
 @exam.route('/exam/info/delete', methods=['POST'])
 @login_required
 @check_permissions("exam.info.delete")
-def delete():
+def info_delete():
     id = request.form.get('id')
     if id is None:
         return jsonify(messages.DATA_NONE)
@@ -95,7 +95,7 @@ def delete():
 @exam.route('/exam/info/list', methods=['GET', 'POST'])
 @login_required
 @check_permissions("exam.info.list")
-def get_list():
+def info_get_list():
     page = request.values.get("page", 1, type=int)
     querying = models.Examinfo.query.options(
         joinedload(models.Examsession), joinedload(models.Subject),
@@ -133,7 +133,7 @@ def get_list():
 @exam.route('/exam/info/query', methods=['GET', 'POST'])
 @login_required
 @check_permissions("exam.info.query")
-def query():
+def info_query():
     id_ = request.values.get("id")
     if id_ is None:
         return jsonify(messages.DATA_NONE)
@@ -155,7 +155,7 @@ def query():
 @exam.route('/exam/info/import_xls', methods=['POST'])
 @login_required
 @check_permissions("exam.info.import_xls")
-def import_xls():
+def info_import_xls():
     file = request.files.get('file')
     if file is None:
         return jsonify(messages.DATA_NONE)
