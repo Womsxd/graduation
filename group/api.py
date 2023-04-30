@@ -1,12 +1,35 @@
 import messages
 from database import models, db
 from . import check_permissions
-from flask_login import login_required
 from sqlalchemy.exc import SQLAlchemyError
 from flask import Blueprint, request, jsonify
+from flask_login import login_required, current_user
 
 groups = Blueprint('group', __name__)
 WHITE_LIST = [1, 2, 3]
+
+
+@groups.route('/group/get_my_permissions', methods=['GET'])
+@login_required
+def get_my_permissions():
+    def get_permissions(group: models.Group) -> set:
+        permissions = set()
+        if group is not None:
+            if group.permissions:
+                permissions.update(group.permissions.split(","))
+            if group.inherit:
+                for i in group.inherit.split(","):
+                    parent_group = models.Group.query.filter_by(id=i).first()
+                    if parent_group is not None:
+                        permissions |= get_permissions(parent_group)
+        return permissions
+
+    group_id = models.User.query.filter_by(csrf=current_user.get_id()).first().group_id
+    gets = get_permissions(models.Group.query.filter_by(id=group_id).first())
+    result = list(gets).sort()
+    returns = {"data": {"permissions": result}}
+    returns.update(messages.OK)
+    return jsonify(returns)
 
 
 @groups.route('/group/add', methods=['POST'])
