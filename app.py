@@ -8,6 +8,7 @@ from auth import auth as auth_blueprint
 from exam import exam as exam_blueprint
 from user import userf as user_blueprint
 from school import school as school_blueprint
+from group.api import group as group_blueprint
 from student import student as student_blueprint
 from subject import subject as subject_blueprint
 
@@ -37,6 +38,7 @@ login_manager.init_app(app)
 app.register_blueprint(auth_blueprint)
 app.register_blueprint(exam_blueprint)
 app.register_blueprint(user_blueprint)
+app.register_blueprint(group_blueprint)
 app.register_blueprint(school_blueprint)
 app.register_blueprint(student_blueprint)
 app.register_blueprint(subject_blueprint)

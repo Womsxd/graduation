@@ -18,7 +18,8 @@ ACCOUNT_BANNED = {'code': 10003, 'message': "Account is Banned"}
 DATA_NONE = {'code': 10101, 'message': 'Data equal to None'}
 NOT_FOUND = {'code': 10102, 'message': 'Data is not Found'}
 DATABASE_ERROR = {'code': 10103, 'message': 'Database operation error'}
-DOT_EXIST = {'code': 10104, 'message': "data does not exist"}
+DOT_EXIST = {'code': 10104, 'message': 'data does not exist'}
+NOT_DELETE = {'code': 10105, 'message': 'Disable modifying/deleting default entries'}
 
 # 添加/修改时使用
 DOT_CHANGE_OWN_PASSWORD = {'code': 10201, 'message': 'Do not change your own password'}
