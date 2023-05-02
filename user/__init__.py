@@ -33,7 +33,7 @@ def change_password():
 
 @userf.route('/user/add', methods=['POST'])
 @login_required
-@check_permissions(1)
+@check_permissions("user.add")
 def add():
     username = request.form.get('username')
     password = request.form.get('password')
@@ -45,7 +45,7 @@ def add():
         return jsonify(returns)
     user = models.User(account=username, password=utils.get_password(password))
     group_id = request.form.get('group_id')
-    if group_id:
+    if group_id is not None:
         if not utils.check_record_existence(models.Group, group_id):
             returns = messages.DOT_EXIST.copy()
             returns['message'] = f"group_id {returns['message']}"
@@ -62,7 +62,7 @@ def add():
 
 @userf.route('/user/edit', methods=['POST'])
 @login_required
-@check_permissions(1)
+@check_permissions("user.edit")
 def edit():
     username = request.form.get('username')
     if username is None:
@@ -109,7 +109,7 @@ def edit():
 
 @userf.route('/user/delete', methods=['POST'])
 @login_required
-@check_permissions(1)
+@check_permissions("user.delete")
 def delete():
     username = request.form.get('username')
     if username is None:
@@ -128,7 +128,7 @@ def delete():
 
 @userf.route('/user/list', methods=['GET', 'POST'])
 @login_required
-@check_permissions(1)
+@check_permissions("user.list")
 def get_list():
     page = request.values.get("page", 1, type=int)
     querying = models.User.query.join(models.Group).with_entities(
@@ -148,7 +148,7 @@ def get_list():
 
 @userf.route('/user/query', methods=['GET', 'POST'])
 @login_required
-@check_permissions(1)
+@check_permissions("user.query")
 def query():
     id_ = request.values.get("id")
     if id_ is None:
@@ -164,7 +164,7 @@ def query():
 
 @userf.route('/user/import_xls', methods=['POST'])
 @login_required
-@check_permissions(1)
+@check_permissions("user.import_xls")
 def import_xls():
     file = request.files.get('file')
     if file is None:

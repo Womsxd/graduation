@@ -10,8 +10,8 @@ from sqlalchemy.exc import SQLAlchemyError
 
 @school.route('/school/class/add', methods=['POST'])
 @login_required
-@check_permissions(1)
-def add():
+@check_permissions("school.class.add")
+def class_add():
     name = request.form.get('name')
     if name is None:
         return jsonify(messages.DATA_NONE)
@@ -34,8 +34,8 @@ def add():
 
 @school.route('/school/class/edit', methods=['POST'])
 @login_required
-@check_permissions(1)
-def edit():
+@check_permissions("school.class.edit")
+def class_edit():
     cid = request.form.get('id')
     if cid is None:
         return jsonify(messages.DATA_NONE)
@@ -64,8 +64,8 @@ def edit():
 
 @school.route('/school/class/delete', methods=['POST'])
 @login_required
-@check_permissions(1)
-def delete():
+@check_permissions("school.class.delete")
+def class_delete():
     cid = request.form.get('id')
     if cid is None:
         return jsonify(messages.DATA_NONE)
@@ -83,8 +83,8 @@ def delete():
 
 @school.route('/school/class/grades', methods=['GET', 'POST'])
 @login_required
-@check_permissions(1)
-def get_grades():
+@check_permissions("school.class.grades")
+def class_get_grades():
     page = request.values.get("page", 1, type=int)
     pagination = db.session.query(models.Clas.grade).distinct().paginate(page=page, per_page=20)
     data = {"grades": pagination.items, "total": pagination.total, "current": page, "maximum": pagination.pages}
@@ -95,8 +95,8 @@ def get_grades():
 
 @school.route('/school/class/list', methods=['GET', 'POST'])
 @login_required
-@check_permissions(1)
-def get_list():
+@check_permissions("school.class.list")
+def class_get_list():
     page = request.values.get("page", 1, type=int)
     querying = models.Student.query.join(models.Clas).with_entities(
         models.Clas.id, models.Clas.name, models.Clas.grade, models.College.name.label('college_n')
@@ -121,8 +121,8 @@ def get_list():
 
 @school.route('/school/class/query', methods=['GET', 'POST'])
 @login_required
-@check_permissions(2)
-def query():
+@check_permissions("school.class.query")
+def get_query():
     cid = request.values.get("id")
     if cid is None:
         return jsonify(messages.DATA_NONE)
@@ -138,8 +138,8 @@ def query():
 
 @school.route('/school/class/import_xls', methods=['POST'])
 @login_required
-@check_permissions(1)
-def import_xls():
+@check_permissions("school.class.import_xls")
+def get_import_xls():
     file = request.files.get('file')
     if file is None:
         return jsonify(messages.DATA_NONE)

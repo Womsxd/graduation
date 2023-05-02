@@ -10,7 +10,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 @school.route('/school/college/add', methods=['POST'])
 @login_required
-@check_permissions(1)
+@check_permissions("school.college.add")
 def add():
     name = request.form.get('name')
     if name is None:
@@ -27,7 +27,7 @@ def add():
 
 @school.route('/school/college/edit', methods=['POST'])
 @login_required
-@check_permissions(1)
+@check_permissions("school.college.edit")
 def edit():
     cid = request.form.get('id')
     if cid is None:
@@ -48,7 +48,7 @@ def edit():
 
 @school.route('/school/college/delete', methods=['POST'])
 @login_required
-@check_permissions(1)
+@check_permissions("school.college.delete")
 def delete():
     cid = request.form.get('id')
     if cid is None:
@@ -67,7 +67,7 @@ def delete():
 
 @school.route('/school/college/list', methods=['GET', 'POST'])
 @login_required
-@check_permissions(1)
+@check_permissions("school.college.list")
 def get_list():
     page = request.values.get("page", 1, type=int)
     querying = models.College.query
@@ -84,7 +84,7 @@ def get_list():
 
 @school.route('/school/college/query', methods=['GET', 'POST'])
 @login_required
-@check_permissions(2)
+@check_permissions("school.college.query")
 def query():
     cid = request.values.get("id")
     if cid is None:
@@ -99,7 +99,7 @@ def query():
 
 @school.route('/school/college/import_xls', methods=['POST'])
 @login_required
-@check_permissions(1)
+@check_permissions("school.college.import_xls")
 def import_xls():
     file = request.files.get('file')
     if file is None:
