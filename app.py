@@ -45,7 +45,7 @@ app.register_blueprint(subject_blueprint)
 
 
 @app.errorhandler(404)
-def my404(error):
+def error_404(error):
     return render_template("404.html"), 404
 
 
