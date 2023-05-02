@@ -1,12 +1,12 @@
 import os
 import yaml
-from flask import Flask
 from database import db
 from gevent import pywsgi
 from auth import login_manager
 from auth import auth as auth_blueprint
 from exam import exam as exam_blueprint
 from user import userf as user_blueprint
+from flask import Flask, render_template
 from school import school as school_blueprint
 from group.api import groups as groups_blueprint
 from student import student as student_blueprint
@@ -42,6 +42,12 @@ app.register_blueprint(groups_blueprint)
 app.register_blueprint(school_blueprint)
 app.register_blueprint(student_blueprint)
 app.register_blueprint(subject_blueprint)
+
+
+@app.errorhandler(404)
+def my404(error):
+    return render_template("404.html"), 404
+
 
 if __name__ == '__main__':
     server = pywsgi.WSGIServer((config['base']['host'], int(config['base']['port'])), app)
