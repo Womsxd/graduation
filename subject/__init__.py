@@ -6,6 +6,7 @@ from flask_login import login_required
 from sqlalchemy.exc import SQLAlchemyError
 from flask import request, jsonify, Blueprint
 
+WHITE_LIST = [1]
 subject = Blueprint('subject', __name__)
 
 
@@ -30,13 +31,15 @@ def add():
 @login_required
 @check_permissions("subject.edit")
 def edit():
-    id_ = request.form.get('id')
-    name = request.form.get('name')
-    if id_ is None:
+    id = request.form.get('id')
+    if id is None:
         return jsonify(messages.DATA_NONE)
-    subj = models.Subject.query.filter_by(id=id_).first()
+    if id in WHITE_LIST:
+        return jsonify(messages.NOT_DELETE)
+    subj = models.Subject.query.filter_by(id=id).first()
     if subj is None:
         return jsonify(messages.NOT_FOUND)
+    name = request.form.get('name')
     if name is not None:
         subj.name = name
     try:
@@ -51,10 +54,12 @@ def edit():
 @login_required
 @check_permissions("subject.delete")
 def delete():
-    id_ = request.form.get('id')
-    if id_ is None:
+    id = request.form.get('id')
+    if id is None:
         return jsonify(messages.DATA_NONE)
-    subj = models.Subject.query.filter_by(id=id_).first()
+    if id in WHITE_LIST:
+        return jsonify(messages.NOT_DELETE)
+    subj = models.Subject.query.filter_by(id=id).first()
     if subj is None:
         return jsonify(messages.NOT_FOUND)
     try:

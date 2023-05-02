@@ -10,6 +10,8 @@ userf = Blueprint('userf', __name__)
 
 from . import otp
 
+WHITE_LIST = [1]
+
 
 @userf.route('/user/change_password', methods=['POST'])
 @login_required
@@ -64,10 +66,10 @@ def add():
 @login_required
 @check_permissions("user.edit")
 def edit():
-    username = request.form.get('username')
-    if username is None:
+    id = request.form.get('id')
+    if id is None:
         return jsonify(messages.DATA_NONE)
-    user = models.User.query.filter_by(account=username).first()
+    user = models.User.query.filter_by(id=id).first()
     if user is None:
         return jsonify(messages.NOT_FOUND)
     password = request.form.get('password')
@@ -111,10 +113,12 @@ def edit():
 @login_required
 @check_permissions("user.delete")
 def delete():
-    username = request.form.get('username')
-    if username is None:
+    id = request.form.get('id')
+    if id is None:
         return jsonify(messages.DATA_NONE)
-    user = models.User.query.filter_by(account=username).first()
+    if id in WHITE_LIST:
+        return jsonify(messages.NOT_DELETE)
+    user = models.User.query.filter_by(id=id).first()
     if user is None:
         return jsonify(messages.NOT_FOUND)
     try:

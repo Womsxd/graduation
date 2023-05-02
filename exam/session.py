@@ -7,6 +7,8 @@ from group import check_permissions
 from flask_login import login_required
 from sqlalchemy.exc import SQLAlchemyError
 
+WHITE_LIST = [1]
+
 
 @exam.route('/exam/session/add', methods=['POST'])
 @login_required
@@ -32,6 +34,8 @@ def edit():
     id = request.form.get('id')
     if id is None:
         return jsonify(messages.DATA_NONE)
+    if id in WHITE_LIST:
+        return jsonify(messages.NOT_DELETE)
     esession = models.Examsession.query.filter_by(id=id).first()
     if esession is None:
         return jsonify(messages.NOT_FOUND)
@@ -53,6 +57,8 @@ def delete():
     id = request.form.get('id')
     if id is None:
         return jsonify(messages.DATA_NONE)
+    if id in WHITE_LIST:
+        return jsonify(messages.NOT_DELETE)
     esession = models.Examsession.query.filter_by(id=id).first()
     if esession is None:
         return jsonify(messages.NOT_FOUND)

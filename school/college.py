@@ -7,6 +7,8 @@ from group import check_permissions
 from flask_login import login_required
 from sqlalchemy.exc import SQLAlchemyError
 
+WHITE_LIST = [1]
+
 
 @school.route('/school/college/add', methods=['POST'])
 @login_required
@@ -29,10 +31,12 @@ def add():
 @login_required
 @check_permissions("school.college.edit")
 def edit():
-    cid = request.form.get('id')
-    if cid is None:
+    id = request.form.get('id')
+    if id is None:
         return jsonify(messages.DATA_NONE)
-    college = models.College.query.filter_by(id=cid).first()
+    if id in WHITE_LIST:
+        return jsonify(messages.NOT_DELETE)
+    college = models.College.query.filter_by(id=id).first()
     if college is None:
         return jsonify(messages.NOT_FOUND)
     name = request.form.get('name')
@@ -50,10 +54,12 @@ def edit():
 @login_required
 @check_permissions("school.college.delete")
 def delete():
-    cid = request.form.get('id')
-    if cid is None:
+    id = request.form.get('id')
+    if id is None:
         return jsonify(messages.DATA_NONE)
-    college = models.College.query.filter_by(id=cid).first()
+    if id in WHITE_LIST:
+        return jsonify(messages.NOT_DELETE)
+    college = models.College.query.filter_by(id=id).first()
     if college is None:
         return jsonify(messages.NOT_FOUND)
     try:
