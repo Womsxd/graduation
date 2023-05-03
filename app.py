@@ -11,6 +11,7 @@ from school import school as school_blueprint
 from group.api import groups as groups_blueprint
 from student import student as student_blueprint
 from subject import subject as subject_blueprint
+from download import download as download_blueprint
 
 with open("config.yaml", 'r', encoding='utf-8') as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
@@ -42,6 +43,7 @@ app.register_blueprint(groups_blueprint)
 app.register_blueprint(school_blueprint)
 app.register_blueprint(student_blueprint)
 app.register_blueprint(subject_blueprint)
+app.register_blueprint(download_blueprint)
 
 
 @app.errorhandler(404)
