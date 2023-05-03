@@ -94,3 +94,16 @@ create unique index users_csrf_uindex
 
 create unique index users_otp_secret_uindex
     on users (otp_secret);
+
+-- 创建默认内容
+insert into college values (1,'默认学院');
+insert into subject values (1,'默认科目');
+insert into examsessions values (1,'默认考试');
+-- 这里白班机要学院创完事才能
+insert into class values  (1,'默认班级',1,0);
+-- 默认权限组
+insert into groups values (1, 'admin', '*', null);
+insert into groups values (2, 'user', 'exam.info.*,exam.session.list,exam.session.query,school.college.list,school.college.query,school.class.list,school.class.query,student.edit,student.list,student.query,subject.list,subject.query', null);
+insert into groups values (3, 'guest', null, null);
+-- 默认用户名称和密码都是admin
+insert into users values (1, 'admin', 'pbkdf2:sha512:260000$ITYGGnyeryw0UsjC$22201dbf5c656a34da05b739266026ab212bc5b1c13a5d39770ad29cbd62ac6070025cc4c1c214e22952383bcf0214add573ea8988949a3d7e4833706202a6da', 1, null, 0, null, null, 0);
