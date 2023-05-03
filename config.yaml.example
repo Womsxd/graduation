@@ -3,5 +3,10 @@ base:
   port: 5050
 cookie:
   secret: 123465
-data:
-  type: sqllite3
+database:
+  engine: sqlite
+  sqlite_file: data.db
+  host: 127.0.0.1:3306
+  username: abc
+  password: abc
+  dbname: graduation

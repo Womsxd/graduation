@@ -22,7 +22,7 @@ class FlaskConfig(object):
     REMEMBER_COOKIE_DURATION = 2592000000  # 设置Cookie最长有效期一个月
     MAX_CONTENT_LENGTH = 16 * 1000 * 1000  # 限制最大上传大小为16M
     db = config["database"]
-    if db["type"] == "sqlite":
+    if db["engine"] == "sqlite":
         db_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), f'./{db["sqlite_file"]}')
         if os.name != "nt":
             db_path = f"/{db_path}"
