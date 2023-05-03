@@ -1,21 +1,27 @@
-import sqlite3
+import os
+import yaml
+from sqlalchemy import create_engine
 
+with open("config.yaml", 'r', encoding='utf-8') as f:
+    config = yaml.load(f, Loader=yaml.FullLoader)
 
-def init_sqlite3():
-    return sqlite3.connect("database.db")
+db = config["database"]
+if db["engine"] == "sqlite":
+    db_path = os.path.join(os.path.abspath(
+        os.path.dirname(__file__)), f'./{db["sqlite_file"]}')
+    if os.name != "nt":
+        db_path = f"/{db_path}"
+    DATABASE_URI = f'sqlite:///{db_path}'
+else:
+    DATABASE_URI = f'{db["type"]}://{db["username"]}:{db["password"]}@{db["host"]}/{db["dbname"]}'
 
+try:
+    engine = create_engine(DATABASE_URI, echo=True)
+    with engine.connect() as conn:
+        with open('sql/init.sql', 'r', encoding='utf-8') as f:
+            conn.execute(f.read())
+except Exception as e:
+    print('An error occurred:', e)
+else:
+    print("初始化完毕")
 
-def creata_table(_cu):
-    with open('sql/init.sql', 'r', encoding='utf-8') as f:
-        try:
-            _cu.executescript(f.read())
-        except sqlite3.OperationalError:
-            print("数据库已完成过初始化")
-        else:
-            print("数据库初始化完毕！")
-
-
-if __name__ == '__main__':
-    cn = init_sqlite3()
-    cu = cn.cursor()
-    creata_table(cu)
