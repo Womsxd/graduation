@@ -16,10 +16,12 @@ else:
     DATABASE_URI = f'{db["type"]}://{db["username"]}:{db["password"]}@{db["host"]}/{db["dbname"]}'
 
 try:
-    engine = create_engine(DATABASE_URI, echo=True)
+    engine = create_engine(DATABASE_URI, echo=False)
     with engine.connect() as conn:
         with open('sql/init.sql', 'r', encoding='utf-8') as f:
-            conn.execute(f.read())
+            for sql in f.read().split(';'):
+                if sql.strip():
+                    conn.execute(sql)
 except Exception as e:
     print('An error occurred:', e)
 else:
