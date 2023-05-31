@@ -52,7 +52,7 @@ def is_decimal(text) -> bool:
 
 def check_record_existence(model_class, id: int or None = None, sid: str or None = None):
     if sid is not None:
-        query = db.session.query(model_class).filter_by(sid=id)
+        query = db.session.query(model_class).filter_by(sid=sid)
     else:
         query = db.session.query(model_class).filter_by(id=id)
     return db.session.query(query.exists()).scalar()  # 存在返回True，不存在返回False

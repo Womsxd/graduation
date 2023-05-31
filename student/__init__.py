@@ -18,7 +18,12 @@ def add():
     class_ = request.form.get('class')
     if not (sid and name):
         return jsonify(messages.DATA_NONE)
-    sex = request.form.get('sex')
+    try:
+        sex = int(request.form.get('sex'))
+    except ValueError:
+        returns = messages.DOT_EXIST.copy()
+        returns['message'] = f"sex {returns['message']}"
+        return jsonify(returns)
     if not sex in utils.SexMap.number_map.keys():
         returns = messages.DOT_EXIST.copy()
         returns['message'] = f"sex {returns['message']}"
@@ -27,7 +32,7 @@ def add():
         returns = messages.DOT_EXIST.copy()
         returns['message'] = f"class {returns['message']}"
         return jsonify(returns)
-    stu = models.Student(sid=sid, name=name, sex=sex, class_=class_)
+    stu = models.Student(sid=sid, name=name, sex=sex, class_id=int(class_))
     try:
         db.session.add(stu)
         db.session.commit()
@@ -56,15 +61,25 @@ def edit():
     if name is not None:
         stu.name = name
     if sex is not None:
+        try:
+            sex = int(sex)
+        except ValueError:
+            returns = messages.DOT_EXIST.copy()
+            returns['message'] = f"sex {returns['message']}"
+            return jsonify(returns)
         if not sex in utils.SexMap.number_map.keys():
             returns = messages.DOT_EXIST.copy()
             returns['message'] = f"sex {returns['message']}"
             return jsonify(returns)
-    if stu.class_ is not None:
+    if stu.class_id is not None:
+        """
         if not utils.check_record_existence(models.Clas, class_):
             returns = messages.DOT_EXIST.copy()
             returns['message'] = f"class {returns['message']}"
             return jsonify(returns)
+        """
+        if utils.check_record_existence(models.Clas, class_):
+            stu.class_id = int(class_)
     try:
         db.session.commit()
         return jsonify(messages.OK)
@@ -98,11 +113,11 @@ def delete():
 def get_list():
     page = request.values.get("page", 1, type=int)
     querying = models.Student.query.join(models.Clas).join(models.College).with_entities(
-        models.Student.sid, models.Student.name, models.Student.sex, models.Student.class_id,
+        models.Student.id, models.Student.sid, models.Student.name, models.Student.sex, models.Student.class_id,
         models.Clas.name.label('class_n'), models.College.name.label('college_n'))
     search = request.values.get("search")
     if search is not None:
-        querying = querying.filter(models.Student.account.like(f"%{search}%"))
+        querying = querying.filter(models.Student.name.like(f"%{search}%"))
     sex = request.values.get("sex")
     if sex is not None:
         querying = querying.filter_by(sex=sex)
@@ -162,7 +177,7 @@ def import_xls():
             student_adds = []
             for i in result[1:]:
                 if "" in i[:2]:
-                    error_lens.append(result.index(i)+1)
+                    error_lens.append(result.index(i) + 1)
                     continue
                 if i[0] in [stu.sid for stu in student_adds]:
                     continue
@@ -187,9 +202,9 @@ def import_xls():
                     else:
                         if i[2] in utils.SexMap.number_map.keys():
                             sex = i[2]
-                student_adds.append(models.Student(sid=i[0], name=i[1], sex=sex,class_id=class_id))
-            returns = {"data": {"ok": len(student_adds), "error": len(error_lens)+len(error_students),
-                                "error_lens": error_lens,"error_students":error_students}}
+                student_adds.append(models.Student(sid=i[0], name=i[1], sex=sex, class_id=class_id))
+            returns = {"data": {"ok": len(student_adds), "error": len(error_lens) + len(error_students),
+                                "error_lens": error_lens, "error_students": error_students}}
             db.session.bulk_save_objects(student_adds)
         returns.update(messages.OK)
         return jsonify(returns)

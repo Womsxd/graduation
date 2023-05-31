@@ -51,13 +51,18 @@ def class_edit():
         class_.name = name
     college = request.form.get('college')
     if college is not None:
+        """
         if not utils.check_record_existence(models.College, college):
             returns = messages.DOT_EXIST.copy()
             returns['message'] = f"college {returns['message']}"
             return jsonify(returns)
+        """
+        if utils.check_record_existence(models.College, college):
+            class_.college_id = int(college)
     grade = request.form.get("grade")
-    if grade is None:
+    if grade is not None:
         class_.grade = grade
+    print(class_)
     try:
         db.session.commit()
         return jsonify(messages.OK)
@@ -92,8 +97,9 @@ def class_delete():
 @check_permissions("school.class.grades")
 def class_get_grades():
     page = request.values.get("page", 1, type=int)
-    pagination = db.session.query(models.Clas.grade).distinct().paginate(page=page, per_page=20)
-    data = {"grades": pagination.items, "total": pagination.total, "current": page, "maximum": pagination.pages}
+    pagination = models.Clas.query.with_entities(models.Clas.grade).distinct().paginate(page=page, per_page=20)
+    grades = [i[0] for i in pagination.items if i[0] != ""]
+    data = {"grades": grades, "total": pagination.total, "current": page, "maximum": pagination.pages}
     returns = {"data": data}
     returns.update(messages.OK)
     return jsonify(returns)
@@ -104,7 +110,7 @@ def class_get_grades():
 @check_permissions("school.class.list")
 def class_get_list():
     page = request.values.get("page", 1, type=int)
-    querying = models.Student.query.join(models.Clas).with_entities(
+    querying = models.Clas.query.join(models.College).with_entities(
         models.Clas.id, models.Clas.name, models.Clas.grade, models.College.name.label('college_n')
     )
     search = request.values.get("search")
@@ -114,7 +120,7 @@ def class_get_list():
     if college_id is not None:
         querying = querying.filter_by(college_id=college_id)
     grade = request.form.get("grade")
-    if grade is None:
+    if grade is not None:
         querying = querying.filter_by(grade=grade)
     pagination = querying.paginate(page=page, per_page=20)
     classes = [{"id": i.id, "name": i.name, "grade": i.grade, "college_name": i.college_n}

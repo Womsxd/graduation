@@ -81,7 +81,7 @@ def get_list():
     if search is not None:
         querying = querying.filter(models.College.name.like(f"%{search}%"))
     pagination = querying.paginate(page=page, per_page=20)
-    colleges = [{"id": i.id, "name": i.account} for i in pagination.items]
+    colleges = [{"id": i.id, "name": i.name} for i in pagination.items]
     data = {"colleges": colleges, "total": pagination.total, "current": page, "maximum": pagination.pages}
     returns = {"data": data}
     returns.update(messages.OK)

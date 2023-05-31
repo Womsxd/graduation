@@ -80,26 +80,32 @@ def edit():
         user.password = utils.get_password(password)  # 生成存储安全的密码
         user.csrf = None
     if group_id is not None:
-        if user.groupid != group_id:
-            if not utils.check_record_existence(models.Group, group_id):
-                returns = messages.DOT_EXIST.copy()
-                returns['message'] = f"group_id {returns['message']}"
-                return jsonify(returns)
-            if user.groupid == 1 and models.User.query.filter(models.User.groupid == 1).count() <= 1:
+        """
+        if not utils.check_record_existence(models.Group, group_id):
+            returns = messages.DOT_EXIST.copy()
+            returns['message'] = f"group_id {returns['message']}"
+            return jsonify(returns)
+        """
+        if utils.check_record_existence(models.Group, group_id):
+            if user.group_id == 1 and models.User.query.filter(models.User.group_id == 1).count() <= 1:
                 return jsonify(messages.NO_ADMIN)  # 防止可用用户中全都没有管理员权限
-            user.group_id = group_id
+            user.group_id = int(group_id)
     disable_otp = request.form.get('disable_otp')
+    if user.csrf == current_user.get_id():
+        return jsonify(messages.NOT_DISABLE_OTP)
     if disable_otp is not None or user.otp_status != 0:  # 只能强行关闭otp不能强行打开
         if disable_otp.lower() == 'true':
             user.otp_status = 0
             user.otp_secret = None
             user.otp_act_exp_time = None
     set_banned = request.form.get('set_banned')
+    if user.csrf == current_user.get_id():
+        return jsonify(messages.NOT_BAN_SELF)
     if set_banned is not None:
-        if set_banned == 1:
+        if set_banned.lower() == 'true':
             user.banned = 1
             user.csrf = None  # 清除被ban用户的csrf
-        else:
+        elif set_banned.lower() == 'false':
             user.banned = 0  # 不等于1的时候unban
     try:
         db.session.commit()
@@ -158,10 +164,12 @@ def query():
     if id_ is None:
         return jsonify(messages.DATA_NONE)
     user = models.User.query.join(models.Group).with_entities(
-        models.User.id, models.User.account, models.Group.name.label('group_n')).filter_by(id=id_).first()
+        models.User.id, models.User.account, models.Group.name.label('group_n'), models.User.otp_status,
+        models.User.banned).filter_by(id=id_).first()
     if user is None:
         return jsonify(messages.DATA_NONE)
-    returns = {"data": {"id": user.id, "name": user.name, "group": user.group_n, "otp_status": user.otp_status}}
+    returns = {"data": {"id": user.id, "account": user.account, "group": user.group_n, "otp_status": user.otp_status,
+                        "banned": user.banned}}
     returns.update(messages.OK)
     return jsonify(returns)
 

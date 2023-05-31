@@ -27,7 +27,7 @@ def info_add():
         returns['message'] = f"subject_id {returns['message']}"
         return jsonify(returns)
     result = request.form.get("result")
-    info = models.Examinfo(sid=sid, session_id=session_id, subject_id=subject_id, result=result)
+    info = models.Examinfo(sid=sid, sessions_id=int(session_id), subject_id=subject_id, result=result)
     try:
         db.session.add(info)
         db.session.commit()
@@ -49,19 +49,25 @@ def info_edit():
         return jsonify(messages.NOT_FOUND)
     sid = request.form.get("sid")
     if sid is not None:
-        if not utils.check_record_existence(models.User, sid=sid):
+        if not utils.check_record_existence(models.Student, sid=sid):
             return jsonify(messages.DOT_EXIST.copy(message=f"sid {messages.DOT_EXIST['message']}"))
         info.sid = sid
     session_id = request.form.get("session_id")
     if session_id is not None:
+        """
         if not utils.check_record_existence(models.Examsession, session_id):
             return jsonify(messages.DOT_EXIST.copy(message=f"session_id {messages.DOT_EXIST['message']}"))
-        info.session_id = session_id
+        """
+        if utils.check_record_existence(models.Examsession, session_id):
+            info.session_id = session_id
     subject_id = request.form.get("subject_id")
     if subject_id is not None:
+        """
         if not utils.check_record_existence(models.Examsession, subject_id):
             return jsonify(messages.DOT_EXIST.copy(message=f"subject_id {messages.DOT_EXIST['message']}"))
-        info.subject_id = subject_id
+        """
+        if utils.check_record_existence(models.Examsession, subject_id):
+            info.subject_id = subject_id
     result = request.form.get("result")
     if result is not None:
         info.result = result
@@ -97,9 +103,8 @@ def info_delete():
 @check_permissions("exam.info.list")
 def info_get_list():
     page = request.values.get("page", 1, type=int)
-    querying = models.Examinfo.query.options(
-        joinedload(models.Examsession), joinedload(models.Subject),
-        joinedload(models.Student).selectinload(models.Clas).selectinload(models.College)).with_entities(
+    querying = models.Examinfo.query.join(models.Examsession).join(models.Subject).join(models.Student). \
+        join(models.Clas).join(models.College).with_entities(
         models.Examinfo.id, models.Examsession.name, models.College.name.label('college_n'), models.Clas.grade,
         models.Clas.name.label("class_n"), models.Subject.name.label("subject_n"), models.Examinfo.sid,
         models.Student.name.label("student_n"), models.Student.sex, models.Examinfo.result)
@@ -123,8 +128,9 @@ def info_get_list():
         querying = querying.filter(models.Examinfo.sid.like(f"%{search_sid}%"))
     pagination = querying.paginate(page=page, per_page=20)
     infos = [
-        {"id": i.id, "exam": i.name, "college": i.college_n, "grade": i.grade, "class": i.class_n, "subject": i.subject,
-         "sid": i.sid, "student": i.student_n, "sex": i.sex, "result": i.result} for i in pagination.items]
+        {"id": i.id, "exam": i.name, "college": i.college_n, "grade": i.grade, "class": i.class_n,
+         "subject": i.subject_n, "sid": i.sid, "student": i.student_n, "sex": i.sex, "result": i.result} for i in
+        pagination.items]
     returns = {"data": {"infos": infos, "total": pagination.total, "current": page, "maximum": pagination.pages}}
     returns.update(messages.OK)
     return jsonify(returns)

@@ -99,7 +99,7 @@ def delete():
         return jsonify(messages.DATABASE_ERROR)
 
 
-@groups.route('/group/list', methods=['POST'])
+@groups.route('/group/list', methods=['GET', 'POST'])
 @login_required
 @check_permissions("group.list")
 def get_list():
