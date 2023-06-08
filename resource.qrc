@@ -1,0 +1,18 @@
+<RCC>
+  <qresource>
+    <file>resource/image/class.svg</file>
+    <file>resource/image/college.svg</file>
+    <file>resource/image/mainwindows-bg.png</file>
+    <file>resource/image/icon.png</file>
+    <file>resource/image/login-bg.png</file>
+    <file>resource/image/examinfo.svg</file>
+    <file>resource/image/groups.svg</file>
+    <file>resource/image/session.svg</file>
+    <file>resource/image/student.svg</file>
+    <file>resource/image/subject.svg</file>
+    <file>resource/image/user.svg</file>
+    <file>resource/i18n/qfluentwidgets.zh_CN.qm</file>
+    <file>resource/i18n/qfluentwidgets.zh_HK.qm</file>
+    <file>resource/i18n/qfluentwidgets.zh_TW.qm</file>
+  </qresource>
+</RCC>
