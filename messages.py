@@ -5,8 +5,8 @@ OK = {'code': 0, 'message': ''}
 NEED_OTP = {'code': 1001, 'message': 'otp verification is required'}
 OTP_VERIFY_ERROR = {'code': 1002, 'message': 'The OTP check fails. Procedure'}
 OTP_NEED_OPEN = {'code': 1003, 'message': 'Please enable otp'}
-OTP_OPEN = {'code': 1003, 'message': 'The otp is enabled. Procedure'}
-OTP_TIME_OUT = {'code': 1004, 'message': 'otp activation timed out'}
+OTP_OPEN = {'code': 1004, 'message': 'The otp is enabled. Procedure'}
+OTP_TIME_OUT = {'code': 1005, 'message': 'otp activation timed out'}
 
 # 登入相关
 NO_LOGIN = {'code': 10001, 'message': 'NoLogin'}

@@ -9,7 +9,7 @@ from flask_login import login_required
 from flask import request, jsonify, session
 
 
-@userf.route('/user/otp/enable', methods=['POST'])
+@userf.route('/user/otp/enable', methods=['GET', 'POST'])
 @login_required
 def otp_enable():
     user = models.User.query.filter_by(id=session["_uid"]).first()

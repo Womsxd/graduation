@@ -33,6 +33,18 @@ def change_password():
         return jsonify(messages.DATABASE_ERROR)
 
 
+@userf.route('/user/get_my_info', methods=['GET'])
+@login_required
+def get_my_info():
+    user = models.User.query.join(models.Group).with_entities(
+        models.User.id, models.User.account, models.Group.name.label('group_n'), models.User.otp_status,
+        models.User.banned).filter_by(csrf=current_user.get_id()).first()
+    returns = {"data": {"id": user.id, "account": user.account, "group": user.group_n, "otp_status": user.otp_status,
+                        "banned": user.banned}}
+    returns.update(messages.OK)
+    return jsonify(returns)
+
+
 @userf.route('/user/add', methods=['POST'])
 @login_required
 @check_permissions("user.add")

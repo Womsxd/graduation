@@ -26,7 +26,8 @@ def get_my_permissions():
 
     group_id = models.User.query.filter_by(csrf=current_user.get_id()).first().group_id
     gets = get_permissions(models.Group.query.filter_by(id=group_id).first())
-    result = list(gets).sort()
+    result = list(gets)
+    result.sort()
     returns = {"data": {"permissions": result}}
     returns.update(messages.OK)
     return jsonify(returns)
@@ -116,7 +117,7 @@ def get_list():
     return jsonify(returns)
 
 
-@groups.route('/group/query', methods=['POST'])
+@groups.route('/group/query', methods=['GET', 'POST'])
 @login_required
 @check_permissions("group.query")
 def query():

@@ -134,7 +134,7 @@ def get_list():
     return jsonify(returns)
 
 
-@student.route('/student/query', methods=['POST'])
+@student.route('/student/query', methods=['GET', 'POST'])
 @login_required
 @check_permissions("student.query")
 def query():
